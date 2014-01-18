@@ -7,7 +7,7 @@ if ( !init() ){
 
 function init(){
 
-    return true;
+    //return true;
 
     renderer = new THREE.WebGLRenderer({
         antialias: true,
