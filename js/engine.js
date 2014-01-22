@@ -17,7 +17,7 @@ var engy = (function(){
     function init(){
 
         renderer = new THREE.WebGLRenderer({
-//        antialias: true,
+            antialias: true,
 //        preserveDrawingBuffer: true,
             alpha : true
         });
