@@ -1,12 +1,12 @@
 var Collider = function(bounds, depth){
-    var objects = {},
-        nodes = [],
-        depth = depth,
+    var registeredObjects = {},
+        registeredObjectsCount = 0,
+        depth = depth || 3,
         bounds = bounds,
         normalizedBounds = normalizeBounds(bounds);
 
-    window.cellWidth = normalizedBounds.width >> depth;
-    window.cellWidth = normalizedBounds.height >> depth;
+//    window.cellWidth = normalizedBounds.width >> depth;
+//    window.cellWidth = normalizedBounds.height >> depth;
 
     var getId = (function(){
         var baseId = 0;
@@ -68,11 +68,11 @@ var Collider = function(bounds, depth){
             normalizedY = obj.y + normalizedBounds.offsetY,
             x = normalizedX / (normalizedBounds.cellWidth),
             y = normalizedY / (normalizedBounds.cellHeight),
-            proportionalWidth = (obj.radius) / normalizedBounds.cellWidth,
-            proportionalHeight = (obj.radius) / normalizedBounds.cellHeight,
+//            proportionalWidth = (obj.radius) / normalizedBounds.cellWidth,
+            proportionalWidth = (10) / normalizedBounds.cellWidth,
+//            proportionalHeight = (obj.radius) / normalizedBounds.cellHeight,
+            proportionalHeight = (10) / normalizedBounds.cellHeight,
             hash;
-
-//        console.log(x,y);
 
         var xPositionInCell = (x >> 0) + 0.5 - x;
         var yPositionInCell = (y >> 0) + 0.5 - y;
@@ -91,14 +91,76 @@ var Collider = function(bounds, depth){
     }
 
     function add(obj){
-        if (! 'colliderId' in obj){
-            obj['colliderId'] = getId;
+        if (! 'colliderCallback' in obj){
+//            obj['colliderCallback'] = function(){};
+
+            // TODO add blank function to object or discard register in collider
         }
-        objects[obj.colliderId] = obj;
+        if (! ('colliderId' in obj)){
+            obj['colliderId'] = getId();
+        }
+        if (! ('collide' in obj)){
+            obj['collide'] = false;
+        }
+        if (! ('radius' in obj)){
+            obj['radius'] = 10;
+        }
+        registeredObjects[obj.colliderId] = obj;
+        registeredObjectsCount ++;
     }
 
     function remove(obj){
-        delete objects[obj.colliderId];
+        delete registeredObjects[obj.colliderId];
+        registeredObjectsCount--;
+    }
+
+    function testCollisions(){
+        var partition = {},
+            partitionKeys,
+            partitionLength,
+            key,
+            hash,
+            length,
+            obj1, obj2;
+        // build hash table for objects
+        for (var i in registeredObjects) {
+            if (registeredObjects[i].x != 0 && registeredObjects[i].y != 0) {
+                hash = collider.getHash3(registeredObjects[i]);
+                for (var j = 0; j < hash.length; j++) {
+                    if (hash[j] in partition) {
+                        partition[hash[j]].push(i);
+                    } else {
+                        partition[hash[j]] = [i];
+                    }
+                }
+            }
+        }
+        partitionKeys = Object.keys(partition);
+        partitionLength = partitionKeys.length;
+//        console.log(partition);
+        // check every cell's objects for collision
+        for (var k =0; k < partitionLength; k++){
+            key = partitionKeys[k];
+            length = partition[key].length;
+            if (length > 1){
+                for (var l = 0; l < length; l++) {
+                    for (var m = l+1; m < length; m++) {
+                        obj1 = registeredObjects[partition[key][l]];
+                        obj2 = registeredObjects[partition[key][m]];
+//                        console.log(partition[key], l, m);
+//                        console.log(obj1, obj2);
+                        if (Math.pow(obj1.x - obj2.x, 2) + Math.pow(obj1.y - obj2.y, 2) < Math.pow(obj1.radius + obj2.radius, 2)){
+                            obj1.collide = true;
+                            obj2.collide = true;
+                            // TODO remove hardcode & organize collision callback
+                            Explosion.detonate(obj1);
+//                            console.log(obj1, obj2);
+                        }
+                    }
+                }
+            }
+        }
+
     }
 
     return {
@@ -108,7 +170,9 @@ var Collider = function(bounds, depth){
         getHash : getPositionHash,
         getHash2 : getPositionHash2,
         getHash3 : getPositionHash3,
-        bounds : normalizedBounds
+        bounds : normalizedBounds,
+        objects : registeredObjects,
+        testCollisions : testCollisions
     };
 };
 
