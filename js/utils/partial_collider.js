@@ -125,7 +125,7 @@ var Collider = function(bounds, depth){
         // build hash table for objects
         for (var i in registeredObjects) {
             if (registeredObjects[i].x != 0 && registeredObjects[i].y != 0) {
-                hash = collider.getHash3(registeredObjects[i]);
+                hash = getPositionHash3(registeredObjects[i]);
                 for (var j = 0; j < hash.length; j++) {
                     if (hash[j] in partition) {
                         partition[hash[j]].push(i);
@@ -153,8 +153,6 @@ var Collider = function(bounds, depth){
                             obj1.collide = true;
                             obj2.collide = true;
                             // TODO remove hardcode & organize collision callback
-                            Explosion.detonate(obj1);
-//                            console.log(obj1, obj2);
                         }
                     }
                 }

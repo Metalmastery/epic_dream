@@ -32,7 +32,7 @@ Ship.prototype.init = function(collider, startX, startY, behavior, behaviorOptio
 //    this.shipColor = (16777215 * Math.random() >> 0).toString(16)
     this.shipColor = (16777215 * Math.random() >> 0);
 
-    this.keys = {};
+    this.pressedKeys = {};
 
     var self = this;
 
@@ -74,19 +74,19 @@ Ship.prototype.applyWebSockets = function(data){
 //            console.log(codes[i]);
 //        }
 //    }
-    for (var i in this.keys) {
-        if (this.keys[i] != 77 && this.keydownEvents[this.keys[i]]) {
-            this.keydownEvents[this.keys[i]].apply(this, [data]);
+    for (var i in this.pressedKeys) {
+        if (this.pressedKeys[i] != 77 && this.keydownEvents[this.pressedKeys[i]]) {
+            this.keydownEvents[this.pressedKeys[i]].apply(this, [data]);
         }
     }
 }
 
 Ship.prototype.applyPressedKeys = function(delta){
-    //console.log(this.keys);
+    //console.log(this.pressedKeys);
     var codes = '[',
         flag = false;
-    for (var i in this.keys) {
-        if (this.keys[i] && this.keydownEvents[i]) {
+    for (var i in this.pressedKeys) {
+        if (this.pressedKeys[i] && this.keydownEvents[i]) {
             this.keydownEvents[i].apply(this, [delta]);
             codes += i + ',';
             flag = true;
@@ -104,28 +104,22 @@ Ship.prototype.start = function(){
 //            spawnRandomParticle(self.x, self.y,0, 0, 10);
 //            self.currenFrame = new Date();
 //            csl(scene.children.length);
-            if (self.running) {
+            if (self.running && !self.collide) {
                 self.applyBehavior(time);
                 self.action(time);
-//                csl(self.currenFrame - self.lastFrame);
-//                self.lastFrame = self.currenFrame;
             } else {
-//                cancelAnimationFrame(this.animation);
-//                self.destroy();
-//                clearInterval(self.animation);
+                self.stop();
             }
+
         };
     self.running = true;
     self.update = callback;
 };
 
 Ship.prototype.stop = function(){
-    this.running = false;
-    this.draw(this.x, this.y, this.rotationAngle, true);
-    collider.untrack(this);
-    this.x = - 1000;
-    this.y = - 1000;
-    delete this;
+    this.collide = false;
+    engy.destroy(this);
+    Explosion.detonate(this);
 };
 
 Ship.prototype.applyBehavior = function(delta){
@@ -141,8 +135,6 @@ Ship.prototype.prepareRandomShip = function(){
     "use strict";
     var self = this;
 
-    console.log();
-
     var geometry = new THREE.Geometry();
     geometry.vertices.push(new THREE.Vector3(10, 0, 0));
     geometry.vertices.push(new THREE.Vector3( -5,  5, 0 ) );
@@ -157,7 +149,7 @@ Ship.prototype.prepareRandomShip = function(){
             color : new THREE.Color(self.shipColor)
         });
     this.geometry = new THREE.Line( geometry, material, 0);
-    console.log('ship', this.geometry);
+//    console.log('ship', this.geometry);
 };
 
 Ship.prototype.follow = function(delta) {
@@ -177,11 +169,11 @@ Ship.prototype.bindEvents = function(){
     var self = this;
     document.addEventListener('keydown', function(e){
 //        console.log(e.keyCode);
-        self.keys[e.keyCode] = true;
+        self.pressedKeys[e.keyCode] = true;
         //self.keydownEvents[e.keyCode].call(self);
     });
     document.addEventListener('keyup', function(e){
-        self.keys[e.keyCode] = false;
+        self.pressedKeys[e.keyCode] = false;
         //self.keydownEvents[e.keyCode].call(self);
     });
     document.body.requestPointerLock = document.body.requestPointerLock    ||
@@ -192,8 +184,8 @@ Ship.prototype.bindEvents = function(){
 //        console.log(e);
         self.mouseX = e.x;
         self.mouseY = e.y;
-//        self.keys['77'] = true;
-        self.keys['101'] = true;
+//        self.pressedKeys['77'] = true;
+        self.pressedKeys['101'] = true;
     })
 };
 
@@ -226,7 +218,7 @@ Ship.prototype.keydownEvents = {
         Bullet.fire(this, this.rotationAngle);
         //var b = new Bullet(this.collider, this.ctx, this.x + 20*Math.cos(this.rotationAngle), this.y + 20*Math.sin(this.rotationAngle), this.rotationAngle);
 //        b.rotationAngle = this.rotationAngle;
-        this.keys['80'] = false;
+        this.pressedKeys['80'] = false;
     },
     '77' : function(){
         return false;
@@ -260,8 +252,8 @@ Ship.prototype.keydownEvents = {
         } else {
             this.rotationSpeed = 0;
         }
-        camera.position.x = this.x;
-        camera.position.y = this.y;
+//        camera.position.x = this.x;
+//        camera.position.y = this.y;
     }
 };
 

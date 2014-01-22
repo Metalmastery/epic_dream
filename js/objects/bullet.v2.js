@@ -1,7 +1,8 @@
 // TODO implement bufferGeometry
 // TODO implement objectPool system to manage busy/gree and visible\invisible bullets
 
-var Bullet = (function(){
+var Bullet = new particles();
+function particles(){
 
     var mainScene,
         projectileLifetime = 200,
@@ -41,6 +42,7 @@ var Bullet = (function(){
     function resetObjectProps(obj){
         obj.position.x = 0;
         obj.position.y = 0;
+        obj.position.collide = false;
         obj.speedX = 0;
         obj.speedY = 0;
         obj.lifetime = projectileLifetime;
@@ -56,9 +58,9 @@ var Bullet = (function(){
 
     function getObject(){
         if (!readyObjects){
-                console.log('! no ready objects');
+//                console.log('! no ready objects');
             if (released.length){
-                console.log('! set released as free');
+//                console.log('! set released as free');
                 setReleasedAsFree();
             } else {
                 console.log('! extend pool');
@@ -120,7 +122,7 @@ var Bullet = (function(){
     function update(time){
         for (var i in activeProjectiles){
 //            console.log(activeProjectiles[i]);
-            if (pool[activeProjectiles[i]].lifetime--) {
+            if (pool[activeProjectiles[i]].lifetime-- && !pool[activeProjectiles[i]].position.collide) {
                 pool[activeProjectiles[i]].position.x += pool[activeProjectiles[i]].speedX * time;
                 pool[activeProjectiles[i]].position.y += pool[activeProjectiles[i]].speedY * time;
             } else {
@@ -174,4 +176,4 @@ var Bullet = (function(){
     this.projectilesArray = pool;
     return this;
 
-})();
+}

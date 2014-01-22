@@ -7,45 +7,34 @@ if ( !init() ){
 
 function init(){
 
-//    return true;
-
-    renderer = new THREE.WebGLRenderer({
-//        antialias: true,
-//        preserveDrawingBuffer: true,
-        alpha : true
-    });
-    renderer.setClearColor(0, 1);
-
-    renderer.setSize(window.innerWidth, window.innerHeight - 50);
-    renderer.setFaceCulling('front', 'cw');
-    document.getElementById('container').appendChild(renderer.domElement);
-
-    scene = new THREE.Scene();
-    scene.fog = new THREE.Fog(0x0, 100, 5500);
-
-    camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1, 10000 );
-    camera.position.set(0, 0, 1000);
-    scene.add(camera);
-
-    Explosion.attachToScene(scene);
-    Bullet.attachToScene(scene);
+    Explosion.attachToScene(engy.scene);
+    Bullet.attachToScene(engy.scene);
 
     var ship = new Ship(null, 0, 0, 'ship', null);
-    scene.add( ship.geometry );
+    engy.followCamera(ship);
     ship.start();
 
-    var dummy = new Ship(null, 200, 200, 'follow', ship);
-    scene.add( dummy.geometry );
-    dummy.start();
+    engy.addToMainLoop(ship);
+    engy.collider.add(ship);
+    engy.addToMainLoop(Bullet);
 
 //    ambient();
 
 //    floor();
+
     helper();
 
-    window.ship = ship;
-    window.dummy = dummy;
     enableCollider();
+    createEnemies(ship);
+}
+
+function createEnemies(ship){
+    for (var a = 0; a < 6.28; a += 0.2){
+        var dummy = new Ship(null, 300 * Math.cos(a), 300 * Math.sin(a), 'follow', ship);
+        dummy.start();
+        engy.collider.add(dummy);
+        engy.addToMainLoop(dummy);
+    }
 }
 
 function bloom(){
@@ -54,13 +43,10 @@ function bloom(){
 }
 
 function enableCollider(){
-    window.collider = new Collider({top : -1000, left : -1000, right : 1000, bottom : 1000 }, 4);
     var counter = 500;
     while (--counter) {
-        window.collider.add(Bullet.projectilesArray[counter].position);
+        engy.collider.add(Bullet.projectilesArray[counter].position);
     }
-    window.collider.add(ship);
-    window.collider.add(dummy);
 }
 
 function helper(){
@@ -71,7 +57,7 @@ function helper(){
     gridHelper.position = new THREE.Vector3( 0, 0, 0 );
     gridHelper.rotation = new THREE.Euler( 1.57, 0, 0 );
 
-    scene.add( gridHelper );
+//    scene.add( gridHelper );
 }
 
 function ambient(){
@@ -103,21 +89,16 @@ function animate() {
     var cb = function(){
         requestAnimationFrame(cb);
         logic();
-        renderer.render( scene, camera );
+        engy.renderer.render( engy.scene, engy.camera );
     };
 
     var logic = function(){
         currentFtame = new Date();
         delta = (currentFtame - lastFrame) / 16;
-        ship.update(delta);
-        dummy.update(delta);
-        Bullet.update(delta);
-//        useCollider();
-        window.collider.testCollisions();
+        engy.update(delta);
+        engy.collider.testCollisions();
         lastFrame = currentFtame;
     };
-
-//    setInterval(logic, 1000/60);
 
     requestAnimationFrame(cb);
 }
