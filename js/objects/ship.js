@@ -25,7 +25,8 @@ Ship.prototype.init = function(collider, startX, startY, behavior, behaviorOptio
 
     this.lastFrame = new Date();
     this.currenFrame = null;
-    this.speedFactor = 1;
+    this.speedFactor = 0.01;
+    this.rotationSpeedFactor = 1000;
     this.movingAngle = this.rotationAngle = this.currentSpeedY = this.currentSpeedX = this.rotationSpeed = 0;
     this.burst = false;
 //    this.shipColor = (16777215 * Math.random() >> 0).toString(16)
@@ -37,7 +38,7 @@ Ship.prototype.init = function(collider, startX, startY, behavior, behaviorOptio
 
     switch (behavior) {
         case 'ship':
-            this.speedFactor =70;
+            this.speedFactor =10;
 
             this.applyBehavior = this.applyPressedKeys;
             this.bindEvents();
@@ -53,7 +54,7 @@ Ship.prototype.init = function(collider, startX, startY, behavior, behaviorOptio
 //                self.keydownEvents['80']();
 //            }, Math.random()*1000 + 500);
             this.applyBehavior = this.follow;
-            this.speedFactor = Math.random()*50+20;
+            this.speedFactor = 10;
             this.target = behaviorOptions || null;
             this.distance = 0;
             this.targetAngle = 0;
@@ -99,26 +100,23 @@ Ship.prototype.start = function(){
 //    console.log('start', this.img);
 
     var self = this,
-        callback = function(){
+        callback = function(time){
 //            spawnRandomParticle(self.x, self.y,0, 0, 10);
-            self.currenFrame = new Date();
-
+//            self.currenFrame = new Date();
+//            csl(scene.children.length);
             if (self.running) {
-                self.applyBehavior(self.currenFrame - self.lastFrame);
-                self.action();
-                //var tm = new Date();
-                //console.log((new Date())-tm);
-                self.lastFrame = self.currenFrame;
-                self.animation = requestAnimationFrame(callback);
+                self.applyBehavior(time);
+                self.action(time);
+//                csl(self.currenFrame - self.lastFrame);
+//                self.lastFrame = self.currenFrame;
             } else {
-                cancelAnimationFrame(this.animation);
+//                cancelAnimationFrame(this.animation);
 //                self.destroy();
+//                clearInterval(self.animation);
             }
-            //ParticleFactory(self.ctx, self.x, self.y);
         };
-    self.animation = requestAnimationFrame(callback);
     self.running = true;
-    //setInterval(callback, 100);
+    self.update = callback;
 };
 
 Ship.prototype.stop = function(){
@@ -151,18 +149,21 @@ Ship.prototype.prepareRandomShip = function(){
     geometry.vertices.push(new THREE.Vector3( 0, 0, 0 ) );
     geometry.vertices.push(new THREE.Vector3( -5, -5, 0 ) );
     geometry.vertices.push(new THREE.Vector3( 10, 0, 0 ) );
+
+//    THREE.GeometryUtils.merge(geometry, new THREE.SphereGeometry(5));
+
     var material = new THREE.LineBasicMaterial({
 //            vertexColors: true,
             color : new THREE.Color(self.shipColor)
         });
     this.geometry = new THREE.Line( geometry, material, 0);
-    console.log(this.geometry);
+    console.log('ship', this.geometry);
 };
 
 Ship.prototype.follow = function(delta) {
     this.distance = Math.sqrt(Math.pow(this.x - this.target.x,2) + Math.pow(this.y - this.target.y,2));
     this.targetAngle = Math.atan2(this.y - this.target.y, this.x - this.target.x);
-    this.rotationAngle = this.targetAngle + pi;
+    this.rotationAngle = this.targetAngle + Math.PI;
     //this.movingAngle = angle;
     //this.keydownEvents['87'].apply(this, [delta/100]);
     this.currentSpeedX = Math.cos(this.rotationAngle)*delta/this.speedFactor;
@@ -189,9 +190,10 @@ Ship.prototype.bindEvents = function(){
     document.body.requestPointerLock();
     document.body.addEventListener('mousemove', function(e){
 //        console.log(e);
-        window.x = e.x;
-        window.y = e.y;
-        self.keys['77'] = true;
+        self.mouseX = e.x;
+        self.mouseY = e.y;
+//        self.keys['77'] = true;
+        self.keys['101'] = true;
     })
 };
 
@@ -211,10 +213,10 @@ Ship.prototype.keydownEvents = {
         this.currentSpeedY = this.currentSpeedY - Math.sin(this.rotationAngle)*time/this.speedFactor;
     },
     '65' : function(time){
-        this.rotationSpeed += time/10000;
+        this.rotationSpeed += time/this.rotationSpeedFactor;
     },
     '68' : function(time){
-        this.rotationSpeed -= time/10000;
+        this.rotationSpeed -= time/this.rotationSpeedFactor;
     },
     '80' : function(){
         this.currentSpeedX = this.currentSpeedY = this.rotationSpeed = 0;
@@ -227,6 +229,7 @@ Ship.prototype.keydownEvents = {
         this.keys['80'] = false;
     },
     '77' : function(){
+        return false;
         var width = bounds.width, height = bounds.height;
         var widthHalf = width / 2, heightHalf = height / 2;
 
@@ -239,23 +242,45 @@ Ship.prototype.keydownEvents = {
         this.rotationAngle = Math.atan2(window.x - vector.x, window.y - vector.y) - 1.57;
 
 //        this.geometry.rotation.x = movingAngle - this.rotationAngle;
+    },
+    '101': function(time){
+        var halfWidth = bounds.width >> 1,
+            halfHeight = bounds.height >> 1,
+            factor = time / this.rotationSpeedFactor;
+//        atan2(ax*by - bx*ay, ax*bx + ay*by);
+        var targetAngle = Math.atan2((this.mouseX - halfWidth)*Math.sin(this.rotationAngle) - Math.cos(this.rotationAngle)*(halfHeight - this.mouseY), (this.mouseX - halfWidth)* Math.cos(this.rotationAngle) + Math.sin(this.rotationAngle)*(halfHeight - this.mouseY));
+        if (Math.abs(targetAngle) > 0.01){
+            var timeToTarget = Math.abs(targetAngle / (this.rotationSpeed - 0.0001));
+            var slowDownTime = Math.abs(this.rotationSpeed / factor);
+            if (timeToTarget > slowDownTime){
+                this.rotationSpeed -= (targetAngle / Math.abs(targetAngle)) * factor;
+            } else {
+                this.rotationSpeed += (targetAngle / Math.abs(targetAngle)) * factor;
+            }
+        } else {
+            this.rotationSpeed = 0;
+        }
+        camera.position.x = this.x;
+        camera.position.y = this.y;
     }
 };
 
-Ship.prototype.action = function(){
+Ship.prototype.action = function(time){
 
     this.rotationAngle += this.rotationSpeed;
-
+    if (this.rotationAngle < 0){
+        this.rotationAngle += 6.28;
+    } else if (this.rotationAngle > 6.28){
+        this.rotationAngle -= 6.28;
+    }
 //    this.x = ( this.x + this.currentSpeedX + bounds.width ) % bounds.width - bounds.width/2;
 //    this.y = ( this.y + this.currentSpeedY + bounds.height ) % bounds.height - bounds.height/2;
 
-    this.x += this.currentSpeedX;
-    this.y += this.currentSpeedY;
+    this.x += this.currentSpeedX * time;
+    this.y += this.currentSpeedY * time;
 
     this.geometry.position.x = this.x;
     this.geometry.position.y = this.y;
     this.geometry.rotation.z = this.rotationAngle;
-
-    camera.position.x = this.x;
-    camera.position.y = this.y;
+//    document.body.style.backgroundPosition = -(this.x>>0) + 'px ' + (this.y>>0) + 'px';
 };

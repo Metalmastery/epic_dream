@@ -92,7 +92,13 @@ var Bullet = (function(){
     function fillGeometry(size){
         var i = size;
         while (i--){
-            geometry.vertices.push(new THREE.Vector3(0,0,0));
+//            geometry.vertices.push(new THREE.Vector3(0,0,0));
+            geometry.vertices.push({
+                x : 0,
+                y : 0,
+                z : 0,
+                radius : 5
+            });
         }
     }
 
