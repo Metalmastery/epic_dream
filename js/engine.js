@@ -6,7 +6,8 @@ var engy = (function(){
         camera,
         collider,
         renderer,
-        watched = {x : 0, y : 0};
+        watched = {x : 0, y : 0},
+        removeQuery = [];
 
     function followCamera(obj){
         if (obj && 'x' in obj && 'y' in obj){
@@ -23,7 +24,7 @@ var engy = (function(){
         });
         renderer.setClearColor(0, 1);
 
-        renderer.setSize(window.innerWidth, window.innerHeight - 50);
+        renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setFaceCulling('front', 'cw');
         document.getElementById('container').appendChild(renderer.domElement);
 
@@ -31,7 +32,7 @@ var engy = (function(){
         scene.fog = new THREE.Fog(0x0, 100, 5500);
 
         camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1, 10000 );
-        camera.position.set(0, 0, 1000);
+        camera.position.set(0, 0, 2000);
         scene.add(camera);
 
         gridHelper();
@@ -63,19 +64,34 @@ var engy = (function(){
     }
 
     function removeFromMainLoop(obj){
+        removeQuery.push(obj);
+    }
+
+    function remove(obj){
         var position = mainLoopObjects.indexOf(obj);
-        if (! position < 0){
-            mainLoopObjects[position] = mainLoopObjects.pop();
+        if (position >= 0){
+            if (position == mainLoopObjects.length-1){
+                mainLoopObjects.pop();
+            } else {
+                mainLoopObjects[position] = mainLoopObjects.pop();
+            }
         }
     }
 
     function destroy(obj){
-        removeFromMainLoop(obj);
+        console.log('destroy', obj);
         collider.remove(obj);
         scene.remove(obj.geometry);
+        removeFromMainLoop(obj);
     }
 
     function update(params){
+        if (removeQuery.length) {
+            for (var i = 0; i < removeQuery.length; i++){
+                remove(removeQuery[i]);
+            }
+            removeQuery = [];
+        }
         counter = mainLoopObjects.length;
         for (var i = 0; i < counter; i++){
 //            console.log(mainLoopObjects[i]);
