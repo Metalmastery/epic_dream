@@ -142,10 +142,10 @@ function particles(){
         var proj = getObject();
 //        console.log(proj, shooter.geometry.position, bulletSystemGeometry);
 
-        proj.position.x = shooter.geometry.position.x + Math.cos(angle)*10;
-        proj.position.y = shooter.geometry.position.y + Math.sin(angle)*10;
         proj.speedX = Math.cos(angle)*projectileSpeed + shooter.currentSpeedX;
         proj.speedY = Math.sin(angle)*projectileSpeed + shooter.currentSpeedY;
+        proj.position.x = shooter.geometry.position.x + proj.speedX;
+        proj.position.y = shooter.geometry.position.y + proj.speedY;
 
         activeProjectiles[proj.id] = proj.id;
 //            lifetime : projectileLifetime,
