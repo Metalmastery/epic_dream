@@ -10,13 +10,13 @@ function init(){
     Explosion.attachToScene(engy.scene);
     Bullet.attachToScene(engy.scene);
 
-    var ship = new Ship(null, 0, 0, 'ship', null);
+    var ship = new Ship(0, 0, 'ship', null);
     engy.followCamera(ship);
     ship.start();
 
+    engy.addToMainLoop(Bullet);
     engy.addToMainLoop(ship);
     engy.collider.add(ship);
-    engy.addToMainLoop(Bullet);
 
 //    ambient();
 
@@ -29,8 +29,12 @@ function init(){
 }
 
 function createEnemies(ship){
-    for (var a = 0; a < 6.28; a += 0.2){
-        var dummy = new Ship(null, 300 * Math.cos(a), 300 * Math.sin(a), 'follow', ship);
+    var a = 0,
+        distance = 500,
+        amount = 5,
+        dummy;
+    for (a = 0; a < 6.28; a += 6.28/amount + Math.random() - 0.5){
+        dummy = new Ship(distance * Math.cos(a), distance * Math.sin(a), 'follow', ship);
         dummy.start();
         engy.collider.add(dummy);
         engy.addToMainLoop(dummy);
