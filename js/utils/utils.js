@@ -44,3 +44,10 @@ var cameraControls = {
     }
 
 }
+
+var csl = (function(){
+    var c = document.getElementById('console');
+    return function(args){
+        c.textContent = args;
+    }
+})()

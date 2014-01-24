@@ -4,42 +4,44 @@ var Bullet = (function(){
         projectileLifetime = 200,
         projectileSpeed = 20,
         activeProjectiles = {},
-        currentAnimationFrame = null;
+        currentAnimationFrame = null,
+        materials = [];
+
+    materials.push(new THREE.LineBasicMaterial({color : 0xffffff}));
+    materials.push(new THREE.ParticleBasicMaterial({color : 0xffffff, size : 20}));
+
 
     function attachToScene(scene){
         mainScene = scene;
+//        mainScene.add(bulletSystem);
+//        bulletSystemGeometry.vertices.push(new THREE.Vector3(-100, 100, 100));
     }
 
     function projectile(){
-        var material = new THREE.LineBasicMaterial({color : 0xffffff}),
+        var material = materials[1],
             geometry = new THREE.Geometry();
-        return new THREE.Line(geometry, material, 1);
+        return new THREE.Line(geometry, material, THREE.LinePieces);
+//        return bulletSystem;
     }
 
     function fireTarget(shooter, target){
 
     }
 
-    function start(){
-        var flag = false;
-        function callback(){
-            flag = false;
-            for (var i in activeProjectiles){
-                activeProjectiles[i].lifetime--;
-                if (activeProjectiles[i].lifetime) {
-                    activeProjectiles[i].projectile.position.x += activeProjectiles[i].speedX;
-                    activeProjectiles[i].projectile.position.y += activeProjectiles[i].speedY;
-                    flag = true;
-                } else {
-                    mainScene.remove(activeProjectiles[i].projectile);
-                    delete activeProjectiles[activeProjectiles[i].projectile.uuid]
-                }
+    var start = function(){
+
+    };
+
+    function update(time){
+        for (var i in activeProjectiles){
+            if (activeProjectiles[i].lifetime--) {
+                activeProjectiles[i].projectile.position.x += activeProjectiles[i].speedX * time;
+                activeProjectiles[i].projectile.position.y += activeProjectiles[i].speedY * time;
+            } else {
+                mainScene.remove(activeProjectiles[i].projectile);
+                delete activeProjectiles[activeProjectiles[i].projectile.uuid]
             }
-//            if (flag) {
-            currentAnimationFrame = requestAnimationFrame(callback);
-//            }
         }
-        currentAnimationFrame = requestAnimationFrame(callback);
     }
 
     function stop(){
@@ -49,6 +51,7 @@ var Bullet = (function(){
 
     function fire(shooter, angle){
         var proj = projectile();
+//        console.log(proj, shooter.geometry.position, bulletSystemGeometry);
         proj.geometry.vertices.push(new THREE.Vector3(Math.cos(angle)*10, Math.sin(angle)*10, 0));
         proj.geometry.vertices.push(new THREE.Vector3(Math.cos(angle)*20, Math.sin(angle)*20, 0));
         proj.position.x = shooter.geometry.position.x;
@@ -56,8 +59,8 @@ var Bullet = (function(){
         mainScene.add(proj);
         activeProjectiles[proj.uuid] = {
             lifetime : projectileLifetime,
-            speedX : Math.cos(angle)*projectileSpeed,
-            speedY : Math.sin(angle)*projectileSpeed,
+            speedX : Math.cos(angle)*projectileSpeed + shooter.currentSpeedX,
+            speedY : Math.sin(angle)*projectileSpeed + shooter.currentSpeedY,
             projectile : proj
         };
         return proj;
@@ -68,7 +71,8 @@ var Bullet = (function(){
         fireTarget : fireTarget,
         attachToScene : attachToScene,
         start : start,
-        stop : stop
+        stop : stop,
+        update : update
     }
 
 })();
