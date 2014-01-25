@@ -1,13 +1,9 @@
 var ws = (function(){
     var socket = new WebSocket('ws:localhost:8888'),
-		clientId = 'cl';
+		clientId;
 
     socket.onopen = function() {
         console.log("connection created");
-		clientId += Date.now();
-		this.send(JSON.stringify({
-			reqType: 'connect'
-		}));
     };
 
     socket.onclose = function(event) {
@@ -22,6 +18,14 @@ var ws = (function(){
     socket.onmessage = function(event) {
         console.log("Data received " + event.data);
 //        window.tester.keys = JSON.parse(event.data)
+		var parsed = JSON.parse(event.data);
+		switch (parsed.msgType) {
+			case 'register_cid':
+				clientId = parsed.cid;
+				break;
+			default:
+				break;
+		}
     };
 
     socket.onerror = function(error) {
@@ -29,9 +33,10 @@ var ws = (function(){
     };
 	socket.createRoom = function (name) {
 		this.send(JSON.stringify({
-			reqType: 'create_room',
+			msgType: 'create_room',
 			roomName: name
 		}));
 	};
+
     return socket;
 })();
