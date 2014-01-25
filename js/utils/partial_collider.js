@@ -147,8 +147,6 @@ var Collider = function(bounds, depth){
         }
         partitionKeys = Object.keys(partition);
         partitionLength = partitionKeys.length;
-//        console.log(partition);
-        // check every cell's objects for collision
         for (var k =0; k < partitionLength; k++){
             key = partitionKeys[k];
             length = partition[key].length;
@@ -157,14 +155,14 @@ var Collider = function(bounds, depth){
                     for (var m = l+1; m < length; m++) {
                         obj1 = registeredObjects[partition[key][l]];
                         obj2 = registeredObjects[partition[key][m]];
-//                        console.log(partition[key], l, m);
-//                        console.log(obj1, obj2);
-                        if (Math.pow(obj1.x - obj2.x, 2) + Math.pow(obj1.y - obj2.y, 2) < Math.pow(obj1.radius + obj2.radius, 2)){
+                        if (obj1.colliderAccept & obj2.colliderType || obj2.colliderAccept & obj1.colliderType){
+                            if (Math.pow(obj1.x - obj2.x, 2) + Math.pow(obj1.y - obj2.y, 2) < Math.pow(obj1.radius + obj2.radius, 2)){
 
-                            obj1.collide = obj1.colliderAccept & obj2.colliderType;
-                            obj2.collide = obj2.colliderAccept & obj1.colliderType;
+                                obj1.collide = obj1.colliderAccept & obj2.colliderType;
+                                obj2.collide = obj2.colliderAccept & obj1.colliderType;
 //                            console.log('COLLIDE', obj1, obj2, obj1 === obj2);
-                            // TODO remove hardcode & organize collision callback
+                                // TODO remove hardcode & organize collision callback
+                            }
                         }
                     }
                 }
@@ -177,8 +175,8 @@ var Collider = function(bounds, depth){
         add : add,
         remove : remove,
         getId : getId,
-        getHash : getPositionHash,
-        getHash2 : getPositionHash2,
+//        getHash : getPositionHash,
+//        getHash2 : getPositionHash2,
         getHash3 : getPositionHash3,
         bounds : normalizedBounds,
         objects : registeredObjects,
