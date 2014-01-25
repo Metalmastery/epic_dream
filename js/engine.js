@@ -7,15 +7,41 @@ var engy = (function(){
         collider,
         renderer,
         watched = {x : 0, y : 0},
-        removeQuery = [];
+        removeQuery = [],
+        gameSpeed = 1,
+        // TODO use next vars for slow-down and speed-up
+        gameSpeedChangeSteps = 0,
+        gameSpeedChangePerStep = 0;
 
-    function followCamera(obj){
+    function attachCamera(obj){
         if (obj && 'x' in obj && 'y' in obj){
             watched = obj;
         }
     }
 
+    function setGameSpeedImmediately(speed){
+        if (typeof speed == 'number'){
+            gameSpeed = speed;
+        }
+    }
+
+    function setGameSpeedGradually(speed){
+        gameSpeedChangeSteps = 50;
+        gameSpeedChangePerStep = (speed - gameSpeed) / gameSpeedChangeSteps;
+        // TODO change the speed of the game in a given time
+    }
+
     function init(){
+
+        document.addEventListener('keyup',function(e){
+            switch (e.keyCode){
+                case 109 : gameSpeed -= 0.1;
+                    break;
+                case 107 : gameSpeed += 0.1;
+                    break;
+            }
+            console.log('==> GAME SPEED', gameSpeed);
+        });
 
         renderer = new THREE.WebGLRenderer({
             antialias: true,
@@ -29,7 +55,7 @@ var engy = (function(){
         document.getElementById('container').appendChild(renderer.domElement);
 
         scene = new THREE.Scene();
-        scene.fog = new THREE.Fog(0x0, 100, 5500);
+        scene.fog = new THREE.Fog(0x0, 1000, 5500);
 
         camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1, 10000 );
         camera.position.set(0, 0, 2000);
@@ -50,7 +76,7 @@ var engy = (function(){
     }
 
     function enableCollider(){
-        collider = new Collider({top : -1000, left : -1000, right : 1000, bottom : 1000 }, 4);
+        collider = new Collider({top : -1000, left : -1000, right : 1000, bottom : 1000 }, 5);
     }
 
     function addToMainLoop(obj){
@@ -79,7 +105,7 @@ var engy = (function(){
     }
 
     function destroy(obj){
-        console.log('destroy', obj);
+//        console.log('destroy', obj);
         collider.remove(obj);
         scene.remove(obj.geometry);
         removeFromMainLoop(obj);
@@ -92,10 +118,14 @@ var engy = (function(){
             }
             removeQuery = [];
         }
+        if (gameSpeedChangeSteps){
+            gameSpeedChangeSteps--;
+            gameSpeed+=gameSpeedChangePerStep;
+        }
         counter = mainLoopObjects.length;
         for (var i = 0; i < counter; i++){
 //            console.log(mainLoopObjects[i]);
-            mainLoopObjects[i].update(params);
+            mainLoopObjects[i].update(params*gameSpeed);
         }
         camera.position.x = watched.x;
         camera.position.y = watched.y;
@@ -115,7 +145,9 @@ var engy = (function(){
         scene : scene,
         camera : camera,
         renderer : renderer,
-        followCamera : followCamera
+        followCamera : attachCamera,
+        setGameSpeedImmediately : setGameSpeedImmediately,
+        setGameSpeedGradually : setGameSpeedGradually
     }
 
 })();
