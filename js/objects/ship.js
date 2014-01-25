@@ -38,6 +38,8 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
 
             this.applyBehavior = this.applyPressedKeys;
             this.bindEvents();
+            this.colliderType = generateBitMask('ship');
+            this.colliderAccept = generateBitMask(['bot', 'projectile']);
             break;
         case 'ws':
             this.speedFactor =70;
@@ -63,6 +65,9 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
 //            this.speedFactor = 10; // followSimpleConstantSpeed
             this.target = behaviorOptions || this;
             // TODO implement LOCATOR and target capture/loose
+
+            this.colliderType = generateBitMask('bot');
+            this.colliderAccept = generateBitMask(['ship', 'projectile']);
             this.distance = 0;
             this.targetAngle = 0;
             break;
@@ -180,7 +185,7 @@ Ship.prototype.followAggressive = function(delta) {
 
     this.attackTimer += delta;
 
-    if (this.attackTimer > this.attackRate && this.distance < 500 /*&& this.targetAngle < 0.2*/){
+    if (this.attackTimer > this.attackRate /*&& this.distance < 500*/ /*&& this.targetAngle < 0.2*/){
         // TODO implement conditions for attack - right angle, fire rate, right distance
         // TODO implement PREDICTION for attack while moving
         Bullet.fire(this, this.rotationAngle);

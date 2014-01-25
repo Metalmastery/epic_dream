@@ -5,6 +5,16 @@ var Collider = function(bounds, depth){
         bounds = bounds,
         normalizedBounds = normalizeBounds(bounds);
 
+    // TODO acceptance map for collider & bitwise comparison
+    // 00000001 - every ship
+    // 00000010 - group1 ship
+    // 00000100 - group2 ship
+    // 00001000 - bullet
+    // 00010000 - laser beam
+    // 00100000 - locator area
+
+
+
 //    window.cellWidth = normalizedBounds.width >> depth;
 //    window.cellWidth = normalizedBounds.height >> depth;
 
@@ -150,9 +160,10 @@ var Collider = function(bounds, depth){
 //                        console.log(partition[key], l, m);
 //                        console.log(obj1, obj2);
                         if (Math.pow(obj1.x - obj2.x, 2) + Math.pow(obj1.y - obj2.y, 2) < Math.pow(obj1.radius + obj2.radius, 2)){
-                            obj1.collide = true;
-                            obj2.collide = true;
-                            console.log('COLLIDE', obj1, obj2, obj1 === obj2);
+
+                            obj1.collide = obj1.colliderAccept & obj2.colliderType;
+                            obj2.collide = obj2.colliderAccept & obj1.colliderType;
+//                            console.log('COLLIDE', obj1, obj2, obj1 === obj2);
                             // TODO remove hardcode & organize collision callback
                         }
                     }

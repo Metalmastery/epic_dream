@@ -50,4 +50,31 @@ var csl = (function(){
     return function(args){
         c.textContent = args;
     }
-})()
+})();
+
+var generateBitMask = (function(){
+    /** up to 31 types of objects */
+    var map = {
+        'ship' : 0,
+        'projectile' : 1,
+        'bot' : 2
+    };
+
+    return function(param){
+        var result = 0;
+        if (param instanceof Array){
+            for (var i = 0; i < param.length; i++){
+                if (param[i] in map){
+                    result |= 1 << map[param[i]];
+                }
+            }
+        } else {
+            if (param in map){
+                result |= 1 << map[param];
+            }
+        }
+        return result;
+    }
+
+
+})();

@@ -99,7 +99,9 @@ function particles(){
                 x : 0,
                 y : 0,
                 z : 0,
-                radius : 5
+                radius : 5,
+                colliderAccept : generateBitMask('ship'),
+                colliderType : generateBitMask('projectile')
             });
         }
     }
