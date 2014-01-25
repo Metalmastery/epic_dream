@@ -33,7 +33,7 @@ function createEnemies(ship){
         distance = 500,
         amount = 5,
         dummy;
-    for (a = 0; a < 6.28; a += 6.28/amount + Math.random() - 0.5){
+    for (a = 0; a < 6.28; a += 6.28/amount){
         dummy = new Ship(distance * Math.cos(a), distance * Math.sin(a), 'follow', ship);
         dummy.start();
         engy.collider.add(dummy);
@@ -47,7 +47,7 @@ function bloom(){
 }
 
 function enableCollider(){
-    var counter = 500;
+    var counter = Bullet.projectilesArray.length;
     while (--counter) {
         engy.collider.add(Bullet.projectilesArray[counter].position);
     }

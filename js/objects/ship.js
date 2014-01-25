@@ -20,7 +20,6 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
     this.y = startY ? startY : 0;
 
     this.lastFrame = new Date();
-    this.currenFrame = null;
     this.speedFactor = 0.01;
     this.rotationSpeedFactor = 1000;
     this.rotationAngle = this.currentSpeedY = this.currentSpeedX = this.rotationSpeed = 0;
@@ -47,9 +46,6 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
 //            this.bindEvents();
             break;
         case 'follow':
-//            setInterval(function(){
-//                self.keydownEvents['80']();
-//            }, Math.random()*1000 + 500);
             this.rotationAngle = Math.random()*6.28;
             // TODO implement pre-orientation function
 
