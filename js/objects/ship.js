@@ -27,7 +27,8 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
     this.rotationSpeedFactor = 1000;
     this.rotationAngle = this.currentSpeedY = this.currentSpeedX = this.rotationSpeed = 0;
 //    this.shipColor = (16777215 * Math.random() >> 0);
-    this.shipColor = new THREE.Color((16777215 * Math.random() >> 0));
+    this.shipColor = new THREE.Color();
+    this.shipColor.setHSL(Math.random(),1,0.5);
 
     this.pressedKeys = {};
 
@@ -42,7 +43,8 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
             this.bindEvents();
             this.colliderType = generateBitMask('ship');
             this.colliderAccept = generateBitMask(['bot', 'projectile']);
-            this.prepareRandomMeshShip();
+//            this.prepareRandomMeshShip();
+            this.prepareRandomToroidalShip();
             window.ship = this;
             break;
         case 'ws':
@@ -172,13 +174,26 @@ Ship.prototype.prepareRandomMeshShip = function(){
     "use strict";
     var self = this;
 
-    var geometry = new THREE.Geometry();
-    geometry.vertices.push(new THREE.Vector3(10, 0, 0));    // front corner
-    geometry.vertices.push(new THREE.Vector3( -5,  5, 0 ) ); // back top
-    geometry.vertices.push(new THREE.Vector3( 0, 0, 2) ); // back center
-    geometry.vertices.push(new THREE.Vector3( -5, -5, 0 ) ); // back bottom
+    var offsets = {
+        frontX : 7 + Math.random()*3,
+        frontY : 7 + Math.random()*3,
+        backX : 2 + Math.random()*8,
+        backY : - 7 + Math.random()*4,
+        tailX : 2 + Math.random()*8,
+        tailZ : Math.random()*2,
+        cabineX : -Math.random(),
+        cabineZ : Math.random(),
+        cabineScale : 1.2 + Math.random()
 
-    geometry.vertices.push(new THREE.Vector3( -7, 0, 4 ) ); // tail spike
+    };
+
+    var geometry = new THREE.Geometry();
+    geometry.vertices.push(new THREE.Vector3(offsets.frontX, 0, 0));    // front corner
+    geometry.vertices.push(new THREE.Vector3( -offsets.backX,  offsets.backY, 0 ) ); // back top
+    geometry.vertices.push(new THREE.Vector3( 0, 0, 3) ); // back center
+    geometry.vertices.push(new THREE.Vector3( -offsets.backX, -offsets.backY, 0 ) ); // back bottom
+
+    geometry.vertices.push(new THREE.Vector3( -offsets.tailX, 0, offsets.tailZ ) ); // tail spike
 
     geometry.vertices.push(new THREE.Vector3( -3, 3, 1 ) ); // tail spike
     geometry.vertices.push(new THREE.Vector3( -3, -3, 1 ) ); // tail spike
@@ -202,27 +217,22 @@ Ship.prototype.prepareRandomMeshShip = function(){
     geometry.computeFaceNormals();
 
     var scaler = new THREE.Matrix4();
-    scaler.scale({x : 1.5, y : 1, z : 1});
-    scaler.setPosition({x : -1, y : 0, z : 1});
+    scaler.scale({x : offsets.cabineScale, y : 1, z : 1});
+    scaler.setPosition({x : -offsets.cabineX, y : 0, z : offsets.cabineZ});
     var cabine = new THREE.SphereGeometry(2.5);
     cabine.applyMatrix(scaler);
 
-    THREE.GeometryUtils.merge(geometry, cabine, 1);
+    THREE.GeometryUtils.merge(geometry, cabine,0);
 
-//    var mapHeight = THREE.ImageUtils.loadTexture( "img/noise2.jpg" );
-//
-//    mapHeight.anisotropy = 4;
-//    mapHeight.repeat.set( 0.998, 0.998 );
-//    mapHeight.offset.set( 0.001, 0.001 );
-//    mapHeight.wrapS = mapHeight.wrapT = THREE.RepeatWrapping;
-//    mapHeight.format = THREE.RGBFormat;
-    var light = this.shipColor.getHSL().l;
+    var hsl = this.shipColor.getHSL();
     // TODO adjust colors in material
     var material = new THREE.MeshPhongMaterial({
-        specular: this.shipColor.clone().offsetHSL(0,0,light),
+        specular: this.shipColor.clone().offsetHSL(0,0,(1-hsl.l)),
         color: this.shipColor,
-        emissive: this.shipColor.clone().offsetHSL(0,0,-light*1.2),
+//        emissive: this.shipColor.clone().offsetHSL(0,2-hsl.s,-0.5),
+        ambient: this.shipColor.clone().offsetHSL(0,0.3,1),
         shininess: 30,
+        metal : true,
         side: THREE.DoubleSide,
         shading : THREE.SmoothShading
 //        bumpMap: mapHeight // TODO use bumpMap for ships
@@ -231,6 +241,46 @@ Ship.prototype.prepareRandomMeshShip = function(){
 
 
     this.geometry = new THREE.Mesh( geometry, material);
+    this.geometry.rotation.order = 'ZYX';
+//    this.geometry = new THREE.Mesh(geometry);
+//    console.log('ship', this.geometry);
+};
+
+Ship.prototype.prepareRandomToroidalShip = function(){
+    "use strict";
+
+    var geometry = new THREE.TorusGeometry(5, 2);
+
+    var scaler = new THREE.Matrix4();
+    scaler.scale({x : 1.8, y : 1, z : 1});
+    var cabine = new THREE.SphereGeometry(2.5);
+    cabine.applyMatrix(scaler);
+    var sub = new THREE.SphereGeometry(5);
+    sub.applyMatrix(scaler);
+
+    var torus = THREE.CSG.toCSG(new THREE.TorusGeometry(5, 2, 5, 50),new THREE.Vector3(0,0,0));
+    var sphere   = THREE.CSG.toCSG(sub, new THREE.Vector3(3.5,0,0));
+    var cab   = THREE.CSG.toCSG(cabine, new THREE.Vector3(-3.5,0,0));
+
+    var geometry = torus.subtract(sphere).union(cab);
+//    var mesh     = new THREE.Mesh(THREE.CSG.fromCSG( geometry ),new THREE.MeshNormalMaterial());
+
+//    geometry.computeFaceNormals();
+
+    var hsl = this.shipColor.getHSL();
+    // TODO adjust colors in material
+    var material = new THREE.MeshPhongMaterial({
+        specular: this.shipColor.clone().offsetHSL(0,0,(0.9-hsl.l)),
+        color: this.shipColor,
+        ambient: this.shipColor.clone().offsetHSL(0,0.3,1),
+        shininess: 30,
+        metal : true,
+        side: THREE.DoubleSide
+//        shading : THREE.SmoothShading
+    } );
+
+//    this.geometry = new THREE.Mesh( geometry, material);
+    this.geometry = new THREE.Mesh(THREE.CSG.fromCSG( geometry ),material);
     this.geometry.rotation.order = 'ZYX';
 //    this.geometry = new THREE.Mesh(geometry);
 //    console.log('ship', this.geometry);
@@ -249,7 +299,7 @@ Ship.prototype.followAggressive = function(delta) {
     }
 
     if (Math.abs(this.targetAngle) > 0.05){
-        this.rotationSpeed = this.targetAngle / (Math.abs(this.targetAngle)*20); // TODO use rotationSpeedFactor to adjust rotation speed
+        this.rotationSpeed = this.targetAngle / (Math.abs(this.targetAngle)*20) * delta; // TODO use rotationSpeedFactor to adjust rotation speed
     } else {
         this.rotationSpeed = 0;
         this.rotationAngle -= this.targetAngle;
@@ -346,10 +396,6 @@ Ship.prototype.bindEvents = function(){
         self.pressedKeys[e.keyCode] = false;
         //self.keydownEvents[e.keyCode].call(self);
     });
-    document.body.requestPointerLock = document.body.requestPointerLock    ||
-        document.body.mozRequestPointerLock ||
-        document.body.webkitRequestPointerLock;
-    document.body.requestPointerLock();
     document.body.addEventListener('mousemove', function(e){
 //        console.log(e);
         self.mouseX = e.x;
@@ -367,14 +413,10 @@ Ship.prototype.keydownEvents = {
             this.currentSpeedX = this.currentSpeedX + Math.cos(this.rotationAngle)*time/this.speedFactor;
             this.currentSpeedY = this.currentSpeedY + Math.sin(this.rotationAngle)*time/this.speedFactor;
         }
-
-//        console.log(this.currentSpeedX);
-
-        //this.movingAngle = Math.sqrt(Math.pow(this.currentSpeed,2) + 1 + 2*this.currentSpeed*Math.cos(this.movingAngle - this.rotationAngle));
     },
     '83' : function(time){
-        this.currentSpeedX = this.currentSpeedX - Math.cos(this.rotationAngle)*time/this.speedFactor;
-        this.currentSpeedY = this.currentSpeedY - Math.sin(this.rotationAngle)*time/this.speedFactor;
+//        this.currentSpeedX = this.currentSpeedX - Math.cos(this.rotationAngle)*time/this.speedFactor;
+//        this.currentSpeedY = this.currentSpeedY - Math.sin(this.rotationAngle)*time/this.speedFactor;
     },
     '65' : function(time){
         this.rotationSpeed += time/this.rotationSpeedFactor;
@@ -410,11 +452,9 @@ Ship.prototype.keydownEvents = {
     '101': function(time){
         var halfWidth = bounds.width >> 1,
             halfHeight = bounds.height >> 1;
-//            factor = time / this.rotationSpeedFactor;
-//        atan2(ax*by - bx*ay, ax*bx + ay*by);
         var targetAngle = Math.atan2((this.mouseX - halfWidth)*Math.sin(this.rotationAngle) - Math.cos(this.rotationAngle)*(halfHeight - this.mouseY), (this.mouseX - halfWidth)* Math.cos(this.rotationAngle) + Math.sin(this.rotationAngle)*(halfHeight - this.mouseY));
         if (Math.abs(targetAngle) > 0.05){
-            this.rotationSpeed = - targetAngle / (Math.abs(targetAngle)*10); // TODO use rotationSpeedFactor to adjust rotation speed
+            this.rotationSpeed = - targetAngle / (Math.abs(targetAngle)*10)*time; // TODO use rotationSpeedFactor to adjust rotation speed
         } else {
             this.rotationSpeed = 0;
             this.rotationAngle -= targetAngle;
