@@ -57,11 +57,33 @@ var engy = (function(){
         scene = new THREE.Scene();
         scene.fog = new THREE.Fog(0x0, 1000, 5500);
 
-        camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1, 10000 );
-        camera.position.set(0, 0, 2000);
-        scene.add(camera);
+        var light = new THREE.AmbientLight( 0x404040 ); // soft white light
+        scene.add( light );
 
-        gridHelper();
+        var directionalLight = new THREE.DirectionalLight(0xffffff);
+        directionalLight.position.set(0, 1, 0.2).normalize();
+        scene.add(directionalLight);
+
+        camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1, 10000 );
+        camera.position.set(0, 0, 1000);
+        scene.add(camera);
+        setBackground();
+//        gridHelper();
+    }
+
+    function setBackground(){
+        var floorTexture = new THREE.ImageUtils.loadTexture( 'img/galaxy_starfield.png' );
+//        var floorTexture = new THREE.ImageUtils.loadTexture( 'img/checkerboard.jpg' );
+        floorTexture.repeat.set( 50,50 );
+//        floorTexture.offset.set( 3, 2 );
+//        floorTexture.needsUpdate = true;
+        floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
+        var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide } );
+        var floorGeometry = new THREE.PlaneGeometry(10000, 10000, 10, 10);
+        var floor = new THREE.Mesh(floorGeometry, floorMaterial);
+        floor.position.y = -0.5;
+        floor.position.z = 0;
+        scene.add(floor);
     }
 
     function gridHelper(){

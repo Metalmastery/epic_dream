@@ -39,6 +39,8 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
             this.bindEvents();
             this.colliderType = generateBitMask('ship');
             this.colliderAccept = generateBitMask(['bot', 'projectile']);
+            this.prepareRandomMeshShip();
+            window.ship = this;
             break;
         case 'ws':
             this.speedFactor =70;
@@ -66,12 +68,13 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
             this.colliderAccept = generateBitMask(['ship', 'projectile']);
             this.distance = 0;
             this.targetAngle = 0;
+//            this.prepareSimpleRandomShip();
+            this.prepareRandomMeshShip();
             break;
         default :
             this.applyBehavior = this.bullet;
     }
 
-    this.prepareRandomShip();
 };
 
 Ship.prototype.applyWebSockets = function(data){
@@ -139,7 +142,7 @@ Ship.prototype.bullet = function(delta){
     this.currentSpeedY = this.speedY*delta/this.speedFactor;
 };
 
-Ship.prototype.prepareRandomShip = function(){
+Ship.prototype.prepareSimpleRandomShip = function(){
     "use strict";
     var self = this;
 
@@ -157,6 +160,66 @@ Ship.prototype.prepareRandomShip = function(){
             color : new THREE.Color(self.shipColor)
         });
     this.geometry = new THREE.Line( geometry, material, 0);
+//    console.log('ship', this.geometry);
+};
+
+Ship.prototype.prepareRandomMeshShip = function(){
+    "use strict";
+    var self = this;
+
+    var geometry = new THREE.Geometry();
+    geometry.vertices.push(new THREE.Vector3(10, 0, 0));    // front corner
+    geometry.vertices.push(new THREE.Vector3( -5,  5, 0 ) ); // back top
+    geometry.vertices.push(new THREE.Vector3( 0, 0, 2) ); // back center
+    geometry.vertices.push(new THREE.Vector3( -5, -5, 0 ) ); // back bottom
+
+    geometry.vertices.push(new THREE.Vector3( -7, 0, 5 ) ); // tail spike
+
+    geometry.vertices.push(new THREE.Vector3( -3, 3, 1 ) ); // tail spike
+    geometry.vertices.push(new THREE.Vector3( -3, -3, 1 ) ); // tail spike
+
+    geometry.vertices.push(new THREE.Vector3( -1, 0, -1 ) ); // tail spike
+
+    // bottom of ship
+    geometry.faces.push(new THREE.Face3(0,1,2));
+    geometry.faces.push(new THREE.Face3(2,3,0));
+
+    // top without spike
+    geometry.faces.push(new THREE.Face3(0,1,7));
+    geometry.faces.push(new THREE.Face3(0,3,7));
+
+    // spike
+    geometry.faces.push(new THREE.Face3(4,1,2));
+    geometry.faces.push(new THREE.Face3(4,3,2));
+//    geometry.faces.push(new THREE.Face3(5,4,7));
+//    geometry.faces.push(new THREE.Face3(6,4,7));
+
+    geometry.computeFaceNormals();
+
+//    var mapHeight = THREE.ImageUtils.loadTexture( "img/noise2.jpg" );
+//
+//    mapHeight.anisotropy = 4;
+//    mapHeight.repeat.set( 0.998, 0.998 );
+//    mapHeight.offset.set( 0.001, 0.001 );
+//    mapHeight.wrapS = mapHeight.wrapT = THREE.RepeatWrapping;
+//    mapHeight.format = THREE.RGBFormat;
+
+    // TODO adjust colors in material
+    var material = new THREE.MeshPhongMaterial({
+        specular: '#ffffff',
+        color: this.shipColor,
+        emissive: '#000105',
+        shininess: 30,
+        side: THREE.DoubleSide,
+        shading : THREE.SmoothShading
+//        bumpMap: mapHeight // TODO use bumpMap for ships
+//        map: mapHeight     // TODO use textures for ships
+    } );
+
+
+    this.geometry = new THREE.Mesh( geometry, material);
+    this.geometry.rotation.order = 'ZYX';
+//    this.geometry = new THREE.Mesh(geometry);
 //    console.log('ship', this.geometry);
 };
 
@@ -183,7 +246,7 @@ Ship.prototype.followAggressive = function(delta) {
 
     if (this.attackTimer > this.attackRate /*&& this.distance < 500*/ /*&& this.targetAngle < 0.2*/){
         // TODO implement conditions for attack - right angle, fire rate, right distance
-        // TODO implement PREDICTION for attack while moving
+        // TODO implement PREDICTION for attack while moving (try this.currentSpeed* in target angle computation)
         Bullet.fire(this, this.rotationAngle);
         this.attackTimer = 0;
     }
@@ -364,5 +427,6 @@ Ship.prototype.action = function(time){
     this.geometry.position.x = this.x;
     this.geometry.position.y = this.y;
     this.geometry.rotation.z = this.rotationAngle;
+//    this.geometry.rotation.x = -this.rotationSpeed*5; // TODO rotation around the own axis while rotating on Z
 //    document.body.style.backgroundPosition = -(this.x>>0) + 'px ' + (this.y>>0) + 'px';
 };
