@@ -24,14 +24,14 @@ function init(){
 
     helper();
 
-//    enableCollider();
+    enableCollider();
     createEnemies(ship);
 }
 
 function createEnemies(ship){
     var a = 0,
-        distance = 500,
-        amount = 5,
+        distance = 100,
+        amount = 50,
         dummy;
     for (a = 0; a < 6.28; a += 6.28/amount){
         dummy = new Ship(distance * Math.cos(a), distance * Math.sin(a), 'follow', ship);

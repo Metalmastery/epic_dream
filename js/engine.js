@@ -13,24 +13,6 @@ var engy = (function(){
         gameSpeedChangeSteps = 0,
         gameSpeedChangePerStep = 0;
 
-    function attachCamera(obj){
-        if (obj && 'x' in obj && 'y' in obj){
-            watched = obj;
-        }
-    }
-
-    function setGameSpeedImmediately(speed){
-        if (typeof speed == 'number'){
-            gameSpeed = speed;
-        }
-    }
-
-    function setGameSpeedGradually(speed){
-        gameSpeedChangeSteps = 50;
-        gameSpeedChangePerStep = (speed - gameSpeed) / gameSpeedChangeSteps;
-        // TODO change the speed of the game in a given time
-    }
-
     function init(){
 
         document.addEventListener('keyup',function(e){
@@ -39,6 +21,10 @@ var engy = (function(){
                     break;
                 case 107 : gameSpeed += 0.1;
                     break;
+                case 90 : setGameSpeedImmediately(0);
+                    break
+                case 88 : setGameSpeedImmediately(1);
+                    break
             }
             console.log('==> GAME SPEED', gameSpeed);
         });
@@ -57,21 +43,40 @@ var engy = (function(){
         scene = new THREE.Scene();
         scene.fog = new THREE.Fog(0x0, 1000, 5500);
 
-        var light = new THREE.AmbientLight( 0x404040 ); // soft white light
+        var light = new THREE.AmbientLight( 0x070715 ); // soft white light
         scene.add( light );
-
-        var directionalLight = new THREE.DirectionalLight(0xffffff);
-        directionalLight.position.set(1, 1, 0).normalize();
+//
+        var directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(-1, 1,0.5).normalize();
         scene.add(directionalLight);
 
         camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1, 10000 );
-        camera.position.set(0, 0, 1000);
+        camera.position.set(0, 0, 1200);
         scene.add(camera);
         setBackground();
         // TODO implement parallax background
 //        setBackground();
 //        gridHelper();
     }
+
+    function attachCamera(obj){
+        if (obj && 'x' in obj && 'y' in obj){
+            watched = obj;
+        }
+    }
+
+    function setGameSpeedImmediately(speed){
+        if (typeof speed == 'number'){
+            gameSpeed = speed;
+        }
+    }
+
+    function setGameSpeedGradually(speed){
+        gameSpeedChangeSteps = 50;
+        gameSpeedChangePerStep = (speed - gameSpeed) / gameSpeedChangeSteps;
+        // TODO change the speed of the game in a given time
+    }
+
 
     function setBackground(){
         var floorTexture = new THREE.ImageUtils.loadTexture( 'img/galaxy_starfield.png' );
@@ -83,8 +88,7 @@ var engy = (function(){
         var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide } );
         var floorGeometry = new THREE.PlaneGeometry(10000, 10000, 10, 10);
         var floor = new THREE.Mesh(floorGeometry, floorMaterial);
-        floor.position.y = -0.5;
-        floor.position.z = 0;
+        floor.position.z = -100;
         scene.add(floor);
     }
 
