@@ -13,8 +13,6 @@ var Bullet = (function(){
 
     function attachToScene(scene){
         mainScene = scene;
-//        mainScene.add(bulletSystem);
-//        bulletSystemGeometry.vertices.push(new THREE.Vector3(-100, 100, 100));
     }
 
     function projectile(){

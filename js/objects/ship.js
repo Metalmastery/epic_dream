@@ -3,7 +3,6 @@ var bounds = {
     height : window.innerHeight
 };
 
-console.log(bounds);
 function Ship() {
     "use strict";
 
@@ -19,12 +18,16 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
     this.x = startX ? startX : 0;
     this.y = startY ? startY : 0;
 
+    // TODO implement damage, durability indication
+    // TODO can compute the size of the indication box with boundingSphere
+    this.durability = Math.random()*100 + 50;
+
     this.lastFrame = new Date();
     this.speedFactor = 0.01;
     this.rotationSpeedFactor = 1000;
     this.rotationAngle = this.currentSpeedY = this.currentSpeedX = this.rotationSpeed = 0;
-//    this.shipColor = (16777215 * Math.random() >> 0).toString(16)
-    this.shipColor = (16777215 * Math.random() >> 0);
+//    this.shipColor = (16777215 * Math.random() >> 0);
+    this.shipColor = new THREE.Color((16777215 * Math.random() >> 0));
 
     this.pressedKeys = {};
 
@@ -58,9 +61,11 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
 //            this.applyBehavior = this.followSimpleConstantSpeed;
             this.applyBehavior = this.followAggressive;
 //            this.applyBehavior = this.followAggressiveConstantSpeed;
+
             // TODO add behaviours like : patrol, hold distance, free seek
             this.speedFactor = 1; // followAggressive, followAggressiveConstantSpeed & followSimple
 //            this.speedFactor = 10; // followSimpleConstantSpeed
+
             this.target = behaviorOptions || this;
             // TODO implement LOCATOR and target capture/loose
 
@@ -173,7 +178,7 @@ Ship.prototype.prepareRandomMeshShip = function(){
     geometry.vertices.push(new THREE.Vector3( 0, 0, 2) ); // back center
     geometry.vertices.push(new THREE.Vector3( -5, -5, 0 ) ); // back bottom
 
-    geometry.vertices.push(new THREE.Vector3( -7, 0, 5 ) ); // tail spike
+    geometry.vertices.push(new THREE.Vector3( -7, 0, 4 ) ); // tail spike
 
     geometry.vertices.push(new THREE.Vector3( -3, 3, 1 ) ); // tail spike
     geometry.vertices.push(new THREE.Vector3( -3, -3, 1 ) ); // tail spike
@@ -196,6 +201,14 @@ Ship.prototype.prepareRandomMeshShip = function(){
 
     geometry.computeFaceNormals();
 
+    var scaler = new THREE.Matrix4();
+    scaler.scale({x : 1.5, y : 1, z : 1});
+    scaler.setPosition({x : -1, y : 0, z : 1});
+    var cabine = new THREE.SphereGeometry(2.5);
+    cabine.applyMatrix(scaler);
+
+    THREE.GeometryUtils.merge(geometry, cabine, 1);
+
 //    var mapHeight = THREE.ImageUtils.loadTexture( "img/noise2.jpg" );
 //
 //    mapHeight.anisotropy = 4;
@@ -203,12 +216,12 @@ Ship.prototype.prepareRandomMeshShip = function(){
 //    mapHeight.offset.set( 0.001, 0.001 );
 //    mapHeight.wrapS = mapHeight.wrapT = THREE.RepeatWrapping;
 //    mapHeight.format = THREE.RGBFormat;
-
+    var light = this.shipColor.getHSL().l;
     // TODO adjust colors in material
     var material = new THREE.MeshPhongMaterial({
-        specular: '#ffffff',
+        specular: this.shipColor.clone().offsetHSL(0,0,light),
         color: this.shipColor,
-        emissive: '#000105',
+        emissive: this.shipColor.clone().offsetHSL(0,0,-light*1.2),
         shininess: 30,
         side: THREE.DoubleSide,
         shading : THREE.SmoothShading

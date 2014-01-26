@@ -61,13 +61,15 @@ var engy = (function(){
         scene.add( light );
 
         var directionalLight = new THREE.DirectionalLight(0xffffff);
-        directionalLight.position.set(0, 1, 0.2).normalize();
+        directionalLight.position.set(1, 1, 0).normalize();
         scene.add(directionalLight);
 
         camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1, 10000 );
         camera.position.set(0, 0, 1000);
         scene.add(camera);
         setBackground();
+        // TODO implement parallax background
+//        setBackground();
 //        gridHelper();
     }
 
