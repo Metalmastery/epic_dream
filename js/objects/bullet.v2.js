@@ -101,7 +101,7 @@ function particles(){
                 y : 0,
                 z : 0,
                 radius : 5,
-                colliderAccept : generateBitMask('ship'),
+                colliderAccept : generateBitMask(['ship', 'bot']),
                 colliderType : generateBitMask('projectile')
             });
         }
