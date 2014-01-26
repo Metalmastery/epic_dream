@@ -24,7 +24,7 @@ function init(){
 
     helper();
 
-    enableCollider();
+//    enableCollider();
     createEnemies(ship);
 }
 
@@ -67,22 +67,6 @@ function helper(){
 function ambient(){
     createStars(scene, 0xccffee);
     nebula(scene, 0xccffee);
-}
-
-function floor(){
-//    var floorTexture = new THREE.ImageUtils.loadTexture( 'img/checkerboard.jpg' );
-    var floorTexture = new THREE.ImageUtils.loadTexture( 'img/black_100_100.png' );
-    floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
-    floorTexture.repeat.set( 100, 100 );
-    var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide } );
-    var floorGeometry = new THREE.PlaneGeometry(1000, 1000, 10, 10);
-    var floor = new THREE.Mesh(floorGeometry, floorMaterial);
-    floor.position.y = -0.5;
-    floor.position.z = -5;
-    floor.scale.x = 1000;
-    floor.scale.y = 1000;
-//    floor.rotation.x = Math.PI / 2;
-    scene.add(floor);
 }
 
 function animate() {
