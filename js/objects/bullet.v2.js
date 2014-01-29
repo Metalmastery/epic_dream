@@ -12,7 +12,7 @@ function particles(){
         materials = [],
         geometry,
         particleSystem,
-        amount = 500,
+        amount = 1000,
         resizeAddition = 100;
 
     /* object pool here */
@@ -57,14 +57,15 @@ function particles(){
     }
 
     function getObject(){
+//        console.log(readyObjects);
         if (!readyObjects){
-//                console.log('! no ready objects');
+                console.log('! no ready objects');
             if (released.length){
-//                console.log('! set released as free');
+                console.log('! set released as free');
                 setReleasedAsFree();
             } else {
-                console.log('! extend pool');
-                addPoolItem(pool.length);
+//                console.log('! extend pool');
+//                addPoolItem(pool.length);
             }
         }
         readyObjects --;
@@ -99,7 +100,9 @@ function particles(){
                 x : 0,
                 y : 0,
                 z : 0,
-                radius : 5
+                radius : 5,
+                colliderAccept : generateBitMask(['ship', 'bot']),
+                colliderType : generateBitMask('projectile')
             });
         }
     }
@@ -122,12 +125,15 @@ function particles(){
     function update(time){
         for (var i in activeProjectiles){
 //            console.log(activeProjectiles[i]);
-            if (pool[activeProjectiles[i]].lifetime-- && !pool[activeProjectiles[i]].position.collide) {
+            pool[activeProjectiles[i]].lifetime-=time;
+            if (pool[activeProjectiles[i]].lifetime>0 && !pool[activeProjectiles[i]].position.collide) {
                 pool[activeProjectiles[i]].position.x += pool[activeProjectiles[i]].speedX * time;
                 pool[activeProjectiles[i]].position.y += pool[activeProjectiles[i]].speedY * time;
             } else {
-                releaseObject(pool[activeProjectiles[i]]);
-                delete activeProjectiles[activeProjectiles[i].id];
+                if (activeProjectiles[i]) {
+                    releaseObject(pool[activeProjectiles[i]]);
+                    delete activeProjectiles[i];
+                }
             }
         }
         particleSystem.geometry.verticesNeedUpdate = true;
