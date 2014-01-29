@@ -31,7 +31,7 @@ function init(){
 function createEnemies(ship){
     var a = 0,
         distance = 100,
-        amount = 50,
+        amount = 1,
         dummy;
     for (a = 0; a < 6.28; a += 6.28/amount){
         dummy = new Ship(distance * Math.cos(a), distance * Math.sin(a), 'follow', ship);

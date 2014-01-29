@@ -55,9 +55,11 @@ var csl = (function(){
 var generateBitMask = (function(){
     /** up to 31 types of objects */
     var map = {
-        'ship' : 0,
-        'projectile' : 1,
-        'bot' : 2
+        'solid' : 0,
+        'virtual' : 1,
+        'ship' : 2,
+        'projectile' : 3,
+        'bot' : 4
     };
 
     return function(param){

@@ -47,11 +47,12 @@ var engy = (function(){
         scene.add( light );
 //
         var directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-        directionalLight.position.set(-1, 1,0.5).normalize();
+        directionalLight.position.set(-1, 1,0.25).normalize();
+        directionalLight.intensity = 1.5;
         scene.add(directionalLight);
 
         camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1, 10000 );
-        camera.position.set(0, 0, 1200);
+        camera.position.set(0, 0, 1000);
         scene.add(camera);
         setBackground();
         // TODO implement parallax background
