@@ -30,6 +30,8 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
     this.shipColor = new THREE.Color();
     this.shipColor.setHSL(Math.random(),1,0.5);
 
+	this.behavior = behavior;
+
     this.pressedKeys = {};
 
     var self = this;
@@ -49,7 +51,10 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
             break;
         case 'ws':
             this.speedFactor =70;
-            this.applyBehavior = this.applyWebSockets;
+			this.applyBehavior = this.applyWebSockets;
+			this.colliderType = generateBitMask('ship');
+			this.colliderAccept = generateBitMask(['bot', 'projectile']);
+			this.prepareRandomToroidalShip();
 //            this.bindEvents();
             break;
         case 'follow':

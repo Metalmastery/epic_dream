@@ -51,7 +51,7 @@ var engy = (function(){
         scene.add(directionalLight);
 
         camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1, 10000 );
-        camera.position.set(0, 0, 1200);
+        camera.position.set(0, 0, 600);
         scene.add(camera);
         setBackground();
         // TODO implement parallax background

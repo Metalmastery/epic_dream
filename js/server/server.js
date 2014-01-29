@@ -12,6 +12,7 @@ server.listen(8888, function() {sys.debug('test') });
 var wss = new WSServer({
     httpServer : server
 });
+var rc = new RoomController();
 
 wss.on('request', function(request) {
     console.log((new Date()).toLocaleTimeString() + ' Connection from origin ' + request.origin);
@@ -25,23 +26,29 @@ wss.on('request', function(request) {
 	}));
 	console.log('Assigned client ID ' + connection.id);
 
+//	connection.send(JSON.stringify({
+//		rooms: rc.rooms,
+//		msgType: 'rooms_list'
+//	}));
+
     connection.on('message', function(msg) {
 		var parsed = JSON.parse(msg.utf8Data);
 		console.log('message from ' + this.id);
 		switch (parsed.msgType) {
 			case 'join_battle':
 				console.log('client ' + this.id + ' joined battle');
-				broadcast(parsed.shipData, this.id);
+				broadcast(msg.utf8Data, this.id);
 				break;
 			case 'create_room':
 				console.log('client ' + this.id + ' created room');
+				rc.create(parsed.roomName, this.id);
 				break;
 			case 'join_room':
-				//TODO: join room method
 				console.log('client ' + this.id + ' joined room');
+				rc.join(parsed.roomName, this.id);
 				break;
 			case 'leave_room':
-				//TODO: leave room method
+				rc.leave(this.id);
 				console.log('client ' + this.id + ' left room');
 				break;
 			default:
@@ -55,17 +62,17 @@ wss.on('request', function(request) {
 
     connection.on('close', function(msg) {
         console.log((new Date()).toLocaleTimeString() + ' Disconnected ' + msg);
+		rc.leave(this.id);
         connections.splice(index, 1);
     });
 
 });
 function broadcast(msg, casterId) {
-	var cns = connections,
-		l = cns.length,
+	var l = connections.length,
 		i = 0;
 	for (i; i < l; i++) {
-		if (cns[i].id !== casterId) {
-			cns[i].send(msg);
+		if (connections[i].id !== casterId) {
+			connections[i].send(msg);
 		}
 	}
 }

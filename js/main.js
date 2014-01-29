@@ -25,7 +25,7 @@ function init(){
     helper();
 
     enableCollider();
-    createEnemies(ship);
+//    createEnemies(ship);
 }
 
 function createEnemies(ship){
