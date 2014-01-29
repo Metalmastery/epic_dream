@@ -20,7 +20,7 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
 
     // TODO implement damage, durability indication
     // TODO can compute the size of the indication box with boundingSphere
-    this.durability = Math.random()*100 + 50;
+    this.durability = (Math.random()*50>>0) + 20;
 
     this.lastFrame = new Date();
     this.speedFactor = 0.01;
@@ -53,7 +53,7 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
 //            this.bindEvents();
             break;
         case 'follow':
-            this.rotationAngle = Math.random()*6.28;
+//            this.rotationAngle = Math.random()*6.28;
             // TODO implement pre-orientation function
 
             this.attackTimer = 0;
@@ -63,6 +63,8 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
 //            this.applyBehavior = this.followSimpleConstantSpeed;
             this.applyBehavior = this.followAggressive;
 //            this.applyBehavior = this.followAggressiveConstantSpeed;
+//            this.applyBehavior = this.seek;
+
 
             // TODO add behaviours like : patrol, hold distance, free seek
             this.speedFactor = 1; // followAggressive, followAggressiveConstantSpeed & followSimple
@@ -122,7 +124,16 @@ Ship.prototype.start = function(){
 //            spawnRandomParticle(self.x, self.y,0, 0, 10);
 //            self.currenFrame = new Date();
 //            csl(scene.children.length);
-            if (self.running && !self.collide) {
+            if (self.running) {
+                if (self.collide){
+                    // TODO implements collision checking and reactions
+                    self.durability--;
+                    if (window.ship == self) console.log(self.durability);
+                    self.collide = false;
+                }
+                if (self.durability < 0) {
+                    self.stop();
+                }
                 self.applyBehavior(time);
                 self.action(time);
             } else {
@@ -286,20 +297,68 @@ Ship.prototype.prepareRandomToroidalShip = function(){
 //    console.log('ship', this.geometry);
 };
 
+Ship.prototype.seek = function(delta){
+    this.distance = Math.sqrt(Math.pow(this.x - this.target.x,2) + Math.pow(this.y - this.target.y,2));
+
+    var totalSpeed = Math.sqrt(Math.pow(this.currentSpeedX,2) + Math.pow(this.currentSpeedY,2));
+
+    var normalizedSpeedX = this.currentSpeedX / totalSpeed;
+    var normalizedSpeedY = this.currentSpeedY / totalSpeed;
+
+    var maxV = 6;
+    var speedUp = 1;
+
+    var targetX = (this.target.x - this.x) / this.distance * maxV;
+    var targetY = (this.target.y - this.y) / this.distance * maxV;
+
+//    if (this.distance < 200) {
+//        var tmp = targetX;
+//        targetX += targetY * 200/this.distance;
+//        targetY -= tmp * 200/this.distance;
+//    }
+
+    var steeringX = speedUp*(targetX - this.currentSpeedX);
+    var steeringY = speedUp*(targetY - this.currentSpeedY);
+
+    this.currentSpeedX = this.currentSpeedX + steeringX/50;
+    this.currentSpeedY = this.currentSpeedY + steeringY/50;
+
+    var angleV = Math.atan2(this.currentSpeedY, this.currentSpeedX);
+    this.rotationAngle = angleV;
+
+    this.attackTimer += delta;
+
+    if (this.attackTimer > this.attackRate){
+        Bullet.fire(this, this.rotationAngle);
+        this.attackTimer = 0;
+    }
+};
+
 Ship.prototype.followAggressive = function(delta) {
     this.distance = Math.sqrt(Math.pow(this.x - this.target.x,2) + Math.pow(this.y - this.target.y,2));
     this.targetAngle = Math.atan2((this.x - this.target.x)*Math.sin(this.rotationAngle) - Math.cos(this.rotationAngle)*(this.y - this.target.y), (this.x - this.target.x)* Math.cos(this.rotationAngle) + Math.sin(this.rotationAngle)*(this.y - this.target.y));
-    var deltaX =  Math.cos(this.rotationAngle)*delta/this.speedFactor*(this.distance - 200)/1000,
-        deltaY = Math.sin(this.rotationAngle)*delta/this.speedFactor*(this.distance - 200)/1000;
-        // TODO implement follow distance
-    if (Math.pow(this.currentSpeedX + deltaX, 2) + Math.pow(this.currentSpeedY + deltaY, 2) < 36){
+//    var deltaX =  Math.cos(this.rotationAngle)*delta/this.speedFactor*(this.distance - 200)/1000,
+//        deltaY = Math.sin(this.rotationAngle)*delta/this.speedFactor*(this.distance - 200)/1000;
+
+//    if (this.distance < 150){
+////        this.targetAngle = (this.targetAngle/Math.abs(this.targetAngle))*(3 - Math.abs(this.targetAngle));
+//        this.targetAngle = -this.targetAngle/Math.abs(this.targetAngle)*2.1 ;
+//    }
+
+    var deltaX =  Math.cos(this.rotationAngle)*delta/this.speedFactor,
+        deltaY = Math.sin(this.rotationAngle)*delta/this.speedFactor,
+        invertAngle = 1;
+    // TODO implement follow distance
+
+    if (Math.pow(this.currentSpeedX + deltaX, 2) + Math.pow(this.currentSpeedY + deltaY, 2) < 16){
         // TODO implement speed limit
         this.currentSpeedX += deltaX;
         this.currentSpeedY += deltaY;
+        invertAngle = -1;
     }
 
     if (Math.abs(this.targetAngle) > 0.05){
-        this.rotationSpeed = this.targetAngle / (Math.abs(this.targetAngle)*20) * delta; // TODO use rotationSpeedFactor to adjust rotation speed
+        this.rotationSpeed = invertAngle * this.targetAngle / (Math.abs(this.targetAngle)*20) * delta; // TODO use rotationSpeedFactor to adjust rotation speed
     } else {
         this.rotationSpeed = 0;
         this.rotationAngle -= this.targetAngle;
