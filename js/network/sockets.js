@@ -5,6 +5,8 @@ var ws = (function(){
 	socket.onopen = function() {
 		console.log("connection created");
 		var data = {};
+        // TODO на одном экране будет 1-2 игрока (если запилить сплит-скрин), перебирать всех в поиске игрока не нужно
+        // TODO сейчас лучше использовать window.ship, потом можно вынести в отдельную категорию
 		for (var i = 0; i < engy.objects.length; i++) {
 			if (engy.objects[i].behavior === 'ship') {
 				data.x = engy.objects[i].x;
