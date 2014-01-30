@@ -27,8 +27,8 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
     this.rotationSpeedFactor = 1000;
     this.rotationAngle = this.currentSpeedY = this.currentSpeedX = this.rotationSpeed = 0;
 //    this.shipColor = (16777215 * Math.random() >> 0);
-    this.shipColor = new THREE.Color();
-    this.shipColor.setHSL(Math.random(),1,0.5);
+//    this.shipColor = new THREE.Color();
+//    this.shipColor.setHSL(Math.random(),1,0.5);
 
     this.pressedKeys = {};
 
@@ -44,7 +44,7 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
             this.colliderType = generateBitMask('ship');
             this.colliderAccept = generateBitMask(['bot', 'projectile']);
 //            this.prepareRandomMeshShip();
-            this.prepareRandomToroidalShip();
+            this.geometry = Designer.torusShip();
             window.ship = this;
             break;
         case 'ws':
@@ -61,9 +61,9 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
 
 //            this.applyBehavior = this.followSimple;
 //            this.applyBehavior = this.followSimpleConstantSpeed;
-            this.applyBehavior = this.followAggressive;
+//            this.applyBehavior = this.followAggressive;
 //            this.applyBehavior = this.followAggressiveConstantSpeed;
-//            this.applyBehavior = this.seek;
+            this.applyBehavior = this.seek;
 
 
             // TODO add behaviours like : patrol, hold distance, free seek
@@ -78,7 +78,7 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
             this.distance = 0;
             this.targetAngle = 0;
 //            this.prepareSimpleRandomShip();
-            this.prepareRandomMeshShip();
+            this.geometry = Designer.basicShip();
             break;
         default :
             this.applyBehavior = this.bullet;
@@ -158,143 +158,6 @@ Ship.prototype.applyBehavior = function(delta){
 Ship.prototype.bullet = function(delta){
     this.currentSpeedX = this.speedX*delta/this.speedFactor;
     this.currentSpeedY = this.speedY*delta/this.speedFactor;
-};
-
-Ship.prototype.prepareSimpleRandomShip = function(){
-    "use strict";
-    var self = this;
-
-    var geometry = new THREE.Geometry();
-    geometry.vertices.push(new THREE.Vector3(10, 0, 0));
-    geometry.vertices.push(new THREE.Vector3( -5,  5, 0 ) );
-    geometry.vertices.push(new THREE.Vector3( 0, 0, 0 ) );
-    geometry.vertices.push(new THREE.Vector3( -5, -5, 0 ) );
-    geometry.vertices.push(new THREE.Vector3( 10, 0, 0 ) );
-
-//    THREE.GeometryUtils.merge(geometry, new THREE.SphereGeometry(5));
-
-    var material = new THREE.LineBasicMaterial({
-//            vertexColors: true,
-            color : new THREE.Color(self.shipColor)
-        });
-    this.geometry = new THREE.Line( geometry, material, 0);
-//    console.log('ship', this.geometry);
-};
-
-Ship.prototype.prepareRandomMeshShip = function(){
-    "use strict";
-    var self = this;
-
-    var offsets = {
-        frontX : 7 + Math.random()*3,
-        frontY : 7 + Math.random()*3,
-        backX : 2 + Math.random()*8,
-        backY : - 7 + Math.random()*4,
-        tailX : 2 + Math.random()*8,
-        tailZ : Math.random()*2,
-        cabineX : -Math.random(),
-        cabineZ : Math.random(),
-        cabineScale : 1.2 + Math.random()
-
-    };
-
-    var geometry = new THREE.Geometry();
-    geometry.vertices.push(new THREE.Vector3(offsets.frontX, 0, 0));    // front corner
-    geometry.vertices.push(new THREE.Vector3( -offsets.backX,  offsets.backY, 0 ) ); // back top
-    geometry.vertices.push(new THREE.Vector3( 0, 0, 3) ); // back center
-    geometry.vertices.push(new THREE.Vector3( -offsets.backX, -offsets.backY, 0 ) ); // back bottom
-
-    geometry.vertices.push(new THREE.Vector3( -offsets.tailX, 0, offsets.tailZ ) ); // tail spike
-
-    geometry.vertices.push(new THREE.Vector3( -3, 3, 1 ) ); // tail spike
-    geometry.vertices.push(new THREE.Vector3( -3, -3, 1 ) ); // tail spike
-
-    geometry.vertices.push(new THREE.Vector3( -1, 0, -1 ) ); // tail spike
-
-    // bottom of ship
-    geometry.faces.push(new THREE.Face3(0,1,2));
-    geometry.faces.push(new THREE.Face3(2,3,0));
-
-    // top without spike
-    geometry.faces.push(new THREE.Face3(0,1,7));
-    geometry.faces.push(new THREE.Face3(0,3,7));
-
-    // spike
-    geometry.faces.push(new THREE.Face3(4,1,2));
-    geometry.faces.push(new THREE.Face3(4,3,2));
-//    geometry.faces.push(new THREE.Face3(5,4,7));
-//    geometry.faces.push(new THREE.Face3(6,4,7));
-
-    geometry.computeFaceNormals();
-
-    var scaler = new THREE.Matrix4();
-    scaler.scale({x : offsets.cabineScale, y : 1, z : 1});
-    scaler.setPosition({x : -offsets.cabineX, y : 0, z : offsets.cabineZ});
-    var cabine = new THREE.SphereGeometry(2.5);
-    cabine.applyMatrix(scaler);
-
-    THREE.GeometryUtils.merge(geometry, cabine,0);
-
-    var hsl = this.shipColor.getHSL();
-    // TODO adjust colors in material
-    var material = new THREE.MeshPhongMaterial({
-        specular: this.shipColor.clone().offsetHSL(0,0,(1-hsl.l)),
-        color: this.shipColor,
-//        emissive: this.shipColor.clone().offsetHSL(0,2-hsl.s,-0.5),
-        ambient: this.shipColor.clone().offsetHSL(0,0.3,1),
-        shininess: 30,
-        metal : true,
-        side: THREE.DoubleSide,
-        shading : THREE.SmoothShading
-//        bumpMap: mapHeight // TODO use bumpMap for ships
-//        map: mapHeight     // TODO use textures for ships
-    } );
-
-
-    this.geometry = new THREE.Mesh( geometry, material);
-    this.geometry.rotation.order = 'ZYX';
-//    this.geometry = new THREE.Mesh(geometry);
-//    console.log('ship', this.geometry);
-};
-
-Ship.prototype.prepareRandomToroidalShip = function(){
-    "use strict";
-
-    var geometry = new THREE.TorusGeometry(5, 2);
-
-    var scaler = new THREE.Matrix4();
-    scaler.scale({x : 1.8, y : 1, z : 1});
-    var cabine = new THREE.SphereGeometry(2.5);
-    cabine.applyMatrix(scaler);
-    var sub = new THREE.SphereGeometry(5);
-    sub.applyMatrix(scaler);
-
-    var torus = THREE.CSG.toCSG(new THREE.TorusGeometry(5, 2, 5, 50),new THREE.Vector3(0,0,0));
-    var sphere   = THREE.CSG.toCSG(sub, new THREE.Vector3(3.5,0,0));
-    var cab   = THREE.CSG.toCSG(cabine, new THREE.Vector3(-3.5,0,0));
-
-    var geometry = torus.subtract(sphere).union(cab);
-//    var mesh     = new THREE.Mesh(THREE.CSG.fromCSG( geometry ),new THREE.MeshNormalMaterial());
-
-//    geometry.computeFaceNormals();
-
-    var hsl = this.shipColor.getHSL();
-    // TODO adjust colors in material
-    var material = new THREE.MeshPhongMaterial({
-        specular: this.shipColor.clone().offsetHSL(0,0,(0.9-hsl.l)),
-        color: this.shipColor,
-        ambient: this.shipColor.clone().offsetHSL(0,0.3,1),
-        shininess: 30,
-        metal : true,
-        side: THREE.DoubleSide
-//        shading : THREE.SmoothShading
-    } );
-
-//    this.geometry = new THREE.Mesh( geometry, material);
-    this.geometry = new THREE.Mesh(THREE.CSG.fromCSG( geometry ),material);
-    this.geometry.rotation.order = 'ZYX';
-//    this.geometry = new THREE.Mesh(geometry);
-//    console.log('ship', this.geometry);
 };
 
 Ship.prototype.seek = function(delta){
