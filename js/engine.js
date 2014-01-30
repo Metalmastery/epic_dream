@@ -85,20 +85,22 @@ var engy = (function(){
         floorTexture.repeat.set( 50,50 );
 //        floorTexture.offset.set( 3, 2 );
 //        floorTexture.needsUpdate = true;
-        floorTexture.wrapS = floorTexture.wrapT = THREE.MirroredRepeatWrapping;
+        floorTexture.wrapS =THREE.RepeatWrapping;
+            floorTexture.wrapT = THREE.MirroredRepeatWrapping;
         var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide, transparent : true, opacity : 0.5 } );
         var floorMaterial2 = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide } );
 
         var floorGeometry = new THREE.PlaneGeometry(10000, 10000, 10, 10);
         var floor = new THREE.Mesh(floorGeometry, floorMaterial);
-        floor.position.z = -1000;
+        floor.position.z = -800;
 //        scene.add(floor);
 
         window.floor = floor;
 
         var floor2 = new THREE.Mesh(floorGeometry, floorMaterial2);
-        floor2.position.z = -1400;
+        floor2.position.z = -1200;
         floor2.rotation.z = -1;
+        floor2.material.color.offsetHSL(0,0,0.3);
         scene.add(floor2);
     }
 
