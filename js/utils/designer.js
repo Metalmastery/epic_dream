@@ -1,6 +1,26 @@
 var Designer = (function(){
     var self = {};
 
+    function _calculateUVsAfterCSG(geometry){
+        geometry.computeBoundingBox();
+        var max = geometry.boundingBox.max,
+            min = geometry.boundingBox.min;
+        var offset = new THREE.Vector2(0 - min.x, 0 - min.y);
+        var range = new THREE.Vector2(max.x - min.x, max.y - min.y);
+        geometry.faceVertexUvs[0] = [];
+        for (var i = 0; i < geometry.faces.length ; i++) {
+            var v1 = geometry.vertices[geometry.faces[i].a], v2 = geometry.vertices[geometry.faces[i].b], v3 = geometry.vertices[geometry.faces[i].c];
+            geometry.faceVertexUvs[0].push(
+                [
+                    new THREE.Vector2((v1.x + offset.x)/range.x ,(v1.y + offset.y)/range.y),
+                    new THREE.Vector2((v2.x + offset.x)/range.x ,(v2.y + offset.y)/range.y),
+                    new THREE.Vector2((v3.x + offset.x)/range.x ,(v3.y + offset.y)/range.y)
+                ]);
+
+        }
+        geometry.uvsNeedUpdate = true;
+    }
+
     function simple2DShip(){
         "use strict";
         var geometry = new THREE.Geometry();
@@ -20,6 +40,10 @@ var Designer = (function(){
 
     function basicShip(){
         "use strict";
+
+        var floorTexture = new THREE.ImageUtils.loadTexture( 'img/noise2.jpg' );
+        floorTexture.wrapS = floorTexture.wrapT = THREE.MirroredRepeatWrapping;
+
         var color = new THREE.Color();
         color.setHSL(Math.random(),1,0.5);
         var offsets = {
@@ -71,26 +95,44 @@ var Designer = (function(){
 
         var hsl = color.getHSL();
         // TODO adjust colors in material
-        var material = new THREE.MeshPhongMaterial({
-            specular: color.clone().offsetHSL(0,0,(1-hsl.l)),
-            color: color,
-//        emissive: this.shipColor.clone().offsetHSL(0,2-hsl.s,-0.5),
-            ambient: color.clone().offsetHSL(0,0.3,1),
-            shininess: 30,
-            metal : true,
-            side: THREE.DoubleSide
-//            shading : THREE.SmoothShading
-//        bumpMap: mapHeight // TODO use bumpMap for ships
-//        map: mapHeight     // TODO use textures for ships
-        } );
 
-        geometry = new THREE.Mesh(THREE.CSG.fromCSG(body), material);
+        geometry = THREE.CSG.fromCSG(body);
+        _calculateUVsAfterCSG(geometry);
+
+        var hsl = color.getHSL();
+        // TODO adjust colors in material
+//        var material = new THREE.MeshPhongMaterial({
+//            specular: color.clone().offsetHSL(0,0,(0.9-hsl.l)),
+//            color: color,
+//            ambient: color.clone().offsetHSL(0,0.3,1),
+//            shininess: 30,
+//            metal : true,
+//            side: THREE.DoubleSide
+//        } );
+
+        var mat2 = new THREE.MeshPhongMaterial( {
+            color: color,
+            specular:color.clone().offsetHSL(0,0,(0.9-hsl.l)),
+            shininess: 10,
+            map: floorTexture,
+//            envMap: floorTexture,
+//            normalMap: floorTexture,
+            combine: THREE.MixOperation,
+            reflectivity: 0.15,
+            side : THREE.DoubleSide
+        });
+
+        geometry = new THREE.Mesh(geometry, mat2);
         geometry.rotation.order = 'ZYX';
         return geometry;
     }
 
     function torusShip(){
         "use strict";
+
+        var floorTexture = new THREE.ImageUtils.loadTexture( 'img/noise3.jpg' );
+        floorTexture.wrapS = floorTexture.wrapT = THREE.MirroredRepeatWrapping;
+
         var color = new THREE.Color();
         color.setHSL(Math.random(),1,0.5);
         var geometry = new THREE.TorusGeometry(5, 2);
@@ -106,20 +148,34 @@ var Designer = (function(){
         var sphere   = THREE.CSG.toCSG(sub, new THREE.Vector3(3.5,0,0));
         var cab   = THREE.CSG.toCSG(cabine, new THREE.Vector3(-3.5,0,0));
 
-        var geometry = torus.subtract(sphere).union(cab);
+        var geometry = THREE.CSG.fromCSG(torus.subtract(sphere).union(cab));
+        _calculateUVsAfterCSG(geometry);
 
         var hsl = color.getHSL();
         // TODO adjust colors in material
-        var material = new THREE.MeshPhongMaterial({
-            specular: color.clone().offsetHSL(0,0,(0.9-hsl.l)),
-            color: color,
-            ambient: color.clone().offsetHSL(0,0.3,1),
-            shininess: 30,
-            metal : true,
-            side: THREE.DoubleSide
-        } );
+//        var material = new THREE.MeshPhongMaterial({
+//            specular: color.clone().offsetHSL(0,0,(0.9-hsl.l)),
+//            color: color,
+//            ambient: color.clone().offsetHSL(0,0.3,1),
+//            shininess: 30,
+//            metal : true,
+//            side: THREE.DoubleSide
+//        } );
 
-        geometry = new THREE.Mesh(THREE.CSG.fromCSG( geometry ),material);
+        var mat2 = new THREE.MeshPhongMaterial( {
+            color: color,
+            specular:color.clone().offsetHSL(0,0,(0.9-hsl.l)),
+            shininess: 30,
+            map: floorTexture,
+            envMap: floorTexture,
+//            normalMap: floorTexture,
+            combine: THREE.MixOperation,
+            reflectivity: 0.15,
+            side : THREE.DoubleSide
+        });
+
+        geometry = new THREE.Mesh(geometry, mat2);
+//        geometry = new THREE.Mesh(cabine,mat2);
         geometry.rotation.order = 'ZYX';
         return geometry;
     }
