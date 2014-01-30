@@ -52,7 +52,7 @@ var engy = (function(){
         scene.add(directionalLight);
 
         camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1, 10000 );
-        camera.position.set(0, 0, 1000);
+        camera.position.set(0, 0, 600);
         scene.add(camera);
         setBackground();
         // TODO implement parallax background
@@ -85,12 +85,21 @@ var engy = (function(){
         floorTexture.repeat.set( 50,50 );
 //        floorTexture.offset.set( 3, 2 );
 //        floorTexture.needsUpdate = true;
-        floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
-        var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide } );
+        floorTexture.wrapS = floorTexture.wrapT = THREE.MirroredRepeatWrapping;
+        var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide, transparent : true, opacity : 0.5 } );
+        var floorMaterial2 = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide } );
+
         var floorGeometry = new THREE.PlaneGeometry(10000, 10000, 10, 10);
         var floor = new THREE.Mesh(floorGeometry, floorMaterial);
-        floor.position.z = -100;
-        scene.add(floor);
+        floor.position.z = -1000;
+//        scene.add(floor);
+
+        window.floor = floor;
+
+        var floor2 = new THREE.Mesh(floorGeometry, floorMaterial2);
+        floor2.position.z = -1400;
+        floor2.rotation.z = -1;
+        scene.add(floor2);
     }
 
     function gridHelper(){

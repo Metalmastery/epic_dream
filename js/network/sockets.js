@@ -16,7 +16,7 @@ var ws = (function(){
 
     socket.onmessage = function(event) {
 //        console.log("Data received " + event.data);
-        window.tester.keys = JSON.parse(event.data)
+//        window.tester.keys = JSON.parse(event.data)
     };
 
     socket.onerror = function(error) {
