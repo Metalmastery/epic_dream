@@ -16,10 +16,21 @@ var engy = (function(){
     function init(){
 
         document.addEventListener('keyup',function(e){
+            console.log(e);
             switch (e.keyCode){
-                case 109 : gameSpeed -= 0.1;
+                case 109 :
+                    if (e.altKey){
+                        camera.position.z += 50;
+                    } else {
+                        gameSpeed -= 0.1;
+                    }
                     break;
-                case 107 : gameSpeed += 0.1;
+                case 107 :
+                    if (e.altKey){
+                    camera.position.z -= 50;
+                } else {
+                    gameSpeed += 0.1;
+                }
                     break;
                 case 90 : setGameSpeedImmediately(0);
                     break
@@ -43,7 +54,9 @@ var engy = (function(){
         scene = new THREE.Scene();
         scene.fog = new THREE.Fog(0x0, 1000, 5500);
 
-        var light = new THREE.AmbientLight( 0x070715 ); // soft white light
+        var ambientColor = new THREE.Color(0x070715);
+        ambientColor.offsetHSL(0,0,0.1);
+        var light = new THREE.AmbientLight( ambientColor ); // soft white light
         scene.add( light );
 //
         var directionalLight = new THREE.DirectionalLight(0xffffff, 1);
