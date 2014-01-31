@@ -1,5 +1,54 @@
 var Designer = (function(){
     var self = {};
+    var materials = {
+        emissive : function(color, map, lightmap){
+            var hsl = color.clone().getHSL();
+            return new THREE.MeshPhongMaterial( {
+                color: color,
+                specular:color.clone().offsetHSL(0,0,(0.9-hsl.l)),
+                shininess: 10,
+                map: lightmap,
+//                envMap: map,
+//            normalMap: floorTexture,
+//                combine: THREE.MixOperation,
+                combine: THREE.MultiplyOperation,
+//                emissive : 0x101530,
+//                specularMap : map,
+                reflectivity: 0.55,
+                side : THREE.DoubleSide
+            });
+        },
+        noAmbient : function(color, map){
+            var hsl = color.clone().getHSL();
+            return new THREE.MeshPhongMaterial( {
+                color: color,
+                specular:color.clone().offsetHSL(0,0,(0.9-hsl.l)),
+                shininess: 10,
+                map: map,
+                envMap: map,
+//            normalMap: floorTexture,
+                combine: THREE.MixOperation,
+                reflectivity: 0.15,
+                side : THREE.DoubleSide
+            });
+        },
+        withAmbient : function(color, map){
+            var hsl = color.clone().getHSL();
+            return new THREE.MeshPhongMaterial( {
+                color: color,
+                specular:color.clone().offsetHSL(0,0,(0.9-hsl.l)),
+                ambient: 0x2266ee,
+                shininess: 10,
+                map: map,
+//            envMap: floorTexture,
+//            normalMap: floorTexture,
+                combine: THREE.MixOperation,
+//                combine: THREE.MultiplyOperation,
+                reflectivity: 0.15,
+                side : THREE.DoubleSide
+            });
+        }
+    };
 
     function _calculateUVsAfterCSG(geometry){
         geometry.computeBoundingBox();
@@ -99,30 +148,10 @@ var Designer = (function(){
         geometry = THREE.CSG.fromCSG(body);
         _calculateUVsAfterCSG(geometry);
 
-        var hsl = color.getHSL();
         // TODO adjust colors in material
-//        var material = new THREE.MeshPhongMaterial({
-//            specular: color.clone().offsetHSL(0,0,(0.9-hsl.l)),
-//            color: color,
-//            ambient: color.clone().offsetHSL(0,0.3,1),
-//            shininess: 30,
-//            metal : true,
-//            side: THREE.DoubleSide
-//        } );
+        var material = materials.withAmbient(color, floorTexture);
 
-        var mat2 = new THREE.MeshPhongMaterial( {
-            color: color,
-            specular:color.clone().offsetHSL(0,0,(0.9-hsl.l)),
-            shininess: 10,
-            map: floorTexture,
-//            envMap: floorTexture,
-//            normalMap: floorTexture,
-            combine: THREE.MixOperation,
-            reflectivity: 0.15,
-            side : THREE.DoubleSide
-        });
-
-        geometry = new THREE.Mesh(geometry, mat2);
+        geometry = new THREE.Mesh(geometry, material);
         geometry.rotation.order = 'ZYX';
         return geometry;
     }
@@ -131,10 +160,12 @@ var Designer = (function(){
         "use strict";
 
         var floorTexture = new THREE.ImageUtils.loadTexture( 'img/noise3.jpg' );
+        var lightmap = new THREE.ImageUtils.loadTexture( 'img/noise3_lightmap.jpg' );
         floorTexture.wrapS = floorTexture.wrapT = THREE.MirroredRepeatWrapping;
 
         var color = new THREE.Color();
-        color.setHSL(Math.random(),1,0.5);
+//        color.setHSL(Math.random(),1,0.5);
+        color.setHSL(0.5,1,0.5);
         var geometry = new THREE.TorusGeometry(5, 2);
 
         var scaler = new THREE.Matrix4();
@@ -151,31 +182,11 @@ var Designer = (function(){
         var geometry = THREE.CSG.fromCSG(torus.subtract(sphere).union(cab));
         _calculateUVsAfterCSG(geometry);
 
-        var hsl = color.getHSL();
         // TODO adjust colors in material
-//        var material = new THREE.MeshPhongMaterial({
-//            specular: color.clone().offsetHSL(0,0,(0.9-hsl.l)),
-//            color: color,
-//            ambient: color.clone().offsetHSL(0,0.3,1),
-//            shininess: 30,
-//            metal : true,
-//            side: THREE.DoubleSide
-//        } );
 
-        var mat2 = new THREE.MeshPhongMaterial( {
-            color: color,
-            specular:color.clone().offsetHSL(0,0,(0.9-hsl.l)),
-            shininess: 30,
-            map: floorTexture,
-            envMap: floorTexture,
-//            normalMap: floorTexture,
-            combine: THREE.MixOperation,
-            reflectivity: 0.15,
-            side : THREE.DoubleSide
-        });
+        var material = materials.emissive(color, floorTexture, lightmap);
 
-        geometry = new THREE.Mesh(geometry, mat2);
-//        geometry = new THREE.Mesh(cabine,mat2);
+        geometry = new THREE.Mesh(geometry, material);
         geometry.rotation.order = 'ZYX';
         return geometry;
     }
