@@ -1,7 +1,25 @@
 var Designer = (function(){
     var self = {};
     var materials = {
-        emissive : function(color, map, lightmap){
+        lambertBasic : function(color, map, lightmap){
+            var hsl = color.clone().getHSL();
+            return new THREE.MeshLambertMaterial( {
+                color: color,
+//                specular:color.clone().offsetHSL(0,0,(0.9-hsl.l)),
+                shininess: 10,
+                map: lightmap,
+                ambient : 0x99ccff,
+//                envMap: map,
+//            normalMap: floorTexture,
+//                combine: THREE.MixOperation,
+                combine: THREE.MultiplyOperation,
+//                emissive : 0x101530,
+                specularMap : map,
+                reflectivity: 0.1,
+                side : THREE.DoubleSide
+            });
+        },
+        phongEmissive : function(color, map, lightmap){
             var hsl = color.clone().getHSL();
             return new THREE.MeshPhongMaterial( {
                 color: color,
@@ -18,7 +36,7 @@ var Designer = (function(){
                 side : THREE.DoubleSide
             });
         },
-        noAmbient : function(color, map){
+        phongNoAmbient : function(color, map){
             var hsl = color.clone().getHSL();
             return new THREE.MeshPhongMaterial( {
                 color: color,
@@ -32,7 +50,7 @@ var Designer = (function(){
                 side : THREE.DoubleSide
             });
         },
-        withAmbient : function(color, map){
+        phongWithAmbient : function(color, map){
             var hsl = color.clone().getHSL();
             return new THREE.MeshPhongMaterial( {
                 color: color,
@@ -91,6 +109,7 @@ var Designer = (function(){
         "use strict";
 
         var floorTexture = new THREE.ImageUtils.loadTexture( 'img/noise2.jpg' );
+        var lightmap = new THREE.ImageUtils.loadTexture( 'img/noise3_lightmap.jpg' );
         floorTexture.wrapS = floorTexture.wrapT = THREE.MirroredRepeatWrapping;
 
         var color = new THREE.Color();
@@ -149,7 +168,8 @@ var Designer = (function(){
         _calculateUVsAfterCSG(geometry);
 
         // TODO adjust colors in material
-        var material = materials.withAmbient(color, floorTexture);
+        var material = materials.phongWithAmbient(color, floorTexture);
+//        var material = materials.lambertBasic(color, floorTexture, lightmap);
 
         geometry = new THREE.Mesh(geometry, material);
         geometry.rotation.order = 'ZYX';
@@ -184,7 +204,8 @@ var Designer = (function(){
 
         // TODO adjust colors in material
 
-        var material = materials.emissive(color, floorTexture, lightmap);
+//        var material = materials.phongEmissive(color, floorTexture, lightmap);
+        var material = materials.lambertBasic(color, floorTexture, lightmap);
 
         geometry = new THREE.Mesh(geometry, material);
         geometry.rotation.order = 'ZYX';

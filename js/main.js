@@ -32,10 +32,10 @@ function createEnemies(ship){
     var a = 0,
 //        distance = Math.random() * 1000 + 300,
         distance = 100,
-        amount = 100,
+        amount = 10,
         dummy;
     for (a = 0; a < 6.28; a += 6.28/amount){
-        distance = 200 + Math.cos(a*3) * 100;
+//        distance = 200 + Math.cos(a*3) * 100;
         dummy = new Ship(distance * Math.cos(a), distance * Math.sin(a), 'follow', ship);
         dummy.start();
         engy.collider.add(dummy);
@@ -80,6 +80,8 @@ function animate() {
         requestAnimationFrame(cb);
         logic();
         engy.renderer.render( engy.scene, engy.camera );
+//        engy.renderer.clear();
+//        engy.composer.render();
     };
 
     var logic = function(){
