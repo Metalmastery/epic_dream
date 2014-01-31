@@ -60,16 +60,16 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
             this.attackRate = (Math.random()*150>>0) + 10;
 
 //            this.applyBehavior = this.followSimple;
-//            this.applyBehavior = this.followSimpleConstantSpeed;
+            this.applyBehavior = this.followSimpleConstantSpeed;
 //            this.applyBehavior = this.followAggressive;
-//            this.applyBehavior = this.followAggressiveConstantSpeed;
-            this.applyBehavior = this.seek;
+            this.applyBehavior = this.followAggressiveConstantSpeed;
+//            this.applyBehavior = this.seek;
 
 
             // TODO add behaviours like : patrol, hold distance, free seek
             this.speedFactor = 1; // followAggressive, followAggressiveConstantSpeed & followSimple
-//            this.speedFactor = 10; // followSimpleConstantSpeed
-
+//            this.speedFactor = 500; // followSimpleConstantSpeed
+//
             this.target = behaviorOptions || this;
             // TODO implement LOCATOR and target capture/loose
 
