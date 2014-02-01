@@ -168,8 +168,8 @@ var Designer = (function(){
         _calculateUVsAfterCSG(geometry);
 
         // TODO adjust colors in material
-        var material = materials.phongWithAmbient(color, floorTexture);
-//        var material = materials.lambertBasic(color, floorTexture, lightmap);
+//        var material = materials.phongWithAmbient(color, floorTexture);
+        var material = materials.lambertBasic(color, floorTexture, lightmap);
 
         geometry = new THREE.Mesh(geometry, material);
         geometry.rotation.order = 'ZYX';

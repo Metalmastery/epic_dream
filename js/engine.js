@@ -60,8 +60,8 @@ var engy = (function(){
         scene.add( light );
 //
         var directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-        directionalLight.position.set(-1, 1,0.25).normalize();
-        directionalLight.intensity = 1.5;
+        directionalLight.position.set(-0.5, 0.7,0.25).normalize();
+        directionalLight.intensity = 3;
         scene.add(directionalLight);
 
         camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1, 10000 );
@@ -106,14 +106,14 @@ var engy = (function(){
         var floorGeometry = new THREE.PlaneGeometry(10000, 10000, 10, 10);
         var floor = new THREE.Mesh(floorGeometry, floorMaterial);
         floor.position.z = -800;
-//        scene.add(floor);
+        scene.add(floor);
 
         window.floor = floor;
 
         var floor2 = new THREE.Mesh(floorGeometry, floorMaterial2);
         floor2.position.z = -1200;
         floor2.rotation.z = -1;
-        floor2.material.color.offsetHSL(0,0,0.3);
+        floor2.material.color.offsetHSL(0,0,1);
         scene.add(floor2);
     }
 
