@@ -27,14 +27,14 @@ var engy = (function(){
                     gameSpeed += 0.1;
                 }
             },
-            90 : toggleGamePause,
+            90 : toggleGamePause
 
         };
 
     function init(){
 
         document.addEventListener('keyup',function(e){
-            console.log(e.keyCode);
+//            console.log(e.keyCode);
             if (e.keyCode in bindings){
                 bindings[e.keyCode].apply(window, [e]);
             }
@@ -45,7 +45,7 @@ var engy = (function(){
 //        preserveDrawingBuffer: true,
             alpha : true
         });
-        renderer.setClearColor(0, 1);
+        renderer.setClearColor(0x002233, 1);
 
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setFaceCulling('front', 'cw');
@@ -59,7 +59,7 @@ var engy = (function(){
         var light = new THREE.AmbientLight( ambientColor ); // soft white light
         scene.add( light );
 //
-        var directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        var directionalLight = new THREE.DirectionalLight(0xdddfff, 1);
         directionalLight.position.set(-0.5, 0.7,0.45).normalize();
         directionalLight.intensity = 4;
         scene.add(directionalLight);
@@ -113,7 +113,7 @@ var engy = (function(){
         floorTexture.wrapS =THREE.RepeatWrapping;
             floorTexture.wrapT = THREE.MirroredRepeatWrapping;
         var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide, transparent : true, opacity : 0.5 } );
-        var floorMaterial2 = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide } );
+        var floorMaterial2 = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide, transparent : true, opacity : 0.5 } );
 
         var floorGeometry = new THREE.PlaneGeometry(10000, 10000, 10, 10);
         var floor = new THREE.Mesh(floorGeometry, floorMaterial);

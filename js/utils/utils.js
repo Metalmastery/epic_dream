@@ -52,17 +52,22 @@ var csl = (function(){
     }
 })();
 
-var generateBitMask = (function(){
+var bitMapper = (function(){
     /** up to 31 types of objects */
     var map = {
         'solid' : 0,
         'virtual' : 1,
         'ship' : 2,
         'projectile' : 3,
-        'bot' : 4
-    };
+        'bot' : 4,
+        'player' : 5
+    }, inverseMap = [];
 
-    return function(param){
+    for (var i in map){
+        inverseMap.push(i);
+    }
+
+    function generateMask(param){
         var result = 0;
         if (param instanceof Array){
             for (var i = 0; i < param.length; i++){
@@ -76,6 +81,21 @@ var generateBitMask = (function(){
             }
         }
         return result;
+    }
+
+    function getTypeByMask(object){
+        var mask = object.colliderType;
+        return inverseMap[Math.log(mask) / Math.LN2];
+    }
+
+    function is(type, object){
+        return (object.colliderType >> map[type]) & 1
+    }
+
+    return {
+        generateMask : generateMask,
+        getTypeByMask : getTypeByMask,
+        is : is
     }
 
 

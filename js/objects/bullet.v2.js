@@ -6,7 +6,7 @@ function particles(){
 
     var mainScene,
         projectileLifetime = 200,
-        projectileSpeed = 20,
+        projectileSpeed = 10,
         activeProjectiles = {},
         currentAnimationFrame = null,
         materials = [],
@@ -32,7 +32,7 @@ function particles(){
             position : geometry.vertices[i],
             speedX : 0,
             speedY : 0,
-            lifetime : projectileLifetime
+            lifetime : projectileLifetime,
         };
         pool.push(obj);
         free.push(i);
@@ -101,8 +101,9 @@ function particles(){
                 y : 0,
                 z : 0,
                 radius : 5,
-                colliderAccept : generateBitMask(['ship', 'bot']),
-                colliderType : generateBitMask('projectile')
+                source : null,
+                colliderAccept : bitMapper.generateMask(['ship', 'bot']),
+                colliderType : bitMapper.generateMask('projectile')
             });
         }
     }
@@ -123,15 +124,19 @@ function particles(){
     }
 
     function update(time){
+        var currentProjectile;
         for (var i in activeProjectiles){
-//            console.log(activeProjectiles[i]);
-            pool[activeProjectiles[i]].lifetime-=time;
-            if (pool[activeProjectiles[i]].lifetime>0 && !pool[activeProjectiles[i]].position.collide) {
-                pool[activeProjectiles[i]].position.x += pool[activeProjectiles[i]].speedX * time;
-                pool[activeProjectiles[i]].position.y += pool[activeProjectiles[i]].speedY * time;
+            currentProjectile = pool[activeProjectiles[i]];
+            currentProjectile.lifetime-=time;
+            if (currentProjectile.position.collide == currentProjectile.position.source){
+                currentProjectile.position.collide = null;
+            }
+            if (currentProjectile.lifetime>0 && !currentProjectile.position.collide) {
+                currentProjectile.position.x += currentProjectile.speedX * time;
+                currentProjectile.position.y += currentProjectile.speedY * time;
             } else {
                 if (activeProjectiles[i]) {
-                    releaseObject(pool[activeProjectiles[i]]);
+                    releaseObject(currentProjectile);
                     delete activeProjectiles[i];
                 }
             }
@@ -147,33 +152,20 @@ function particles(){
     function fire(shooter, angle){
         var proj = getObject();
 //        console.log(proj, shooter.geometry.position, bulletSystemGeometry);
-
-        proj.speedX = Math.cos(angle)*projectileSpeed + shooter.currentSpeedX;
-        proj.speedY = Math.sin(angle)*projectileSpeed + shooter.currentSpeedY;
+        var cos = Math.cos(angle), sin = Math.sin(angle);
+        var selfSpeedX = cos*projectileSpeed,
+            selfSpeedY = sin*projectileSpeed;
+        proj.speedX = selfSpeedX + shooter.currentSpeedX;
+        proj.speedY = selfSpeedY + shooter.currentSpeedY;
         proj.position.x = shooter.geometry.position.x + proj.speedX;
         proj.position.y = shooter.geometry.position.y + proj.speedY;
+        proj.position.source = shooter;
 
         activeProjectiles[proj.id] = proj.id;
-//            lifetime : projectileLifetime,
-//            speedX : Math.cos(angle)*projectileSpeed + shooter.currentSpeedX,
-//            speedY : Math.sin(angle)*projectileSpeed + shooter.currentSpeedY,
-//            projectile : proj
-//        };
         return proj;
     }
 
     createSystem();
-
-//    return {
-//        fire : fire,
-////        fireTarget : fireTarget,
-//        attachToScene : attachToScene,
-////        start : start,
-//        stop : stop,
-//        update : update,
-//        projectilesArray : pool
-//    }
-
 
     this.fire = fire;
     this.attachToScene = attachToScene;

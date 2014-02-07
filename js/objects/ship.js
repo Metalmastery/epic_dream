@@ -37,12 +37,12 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
     switch (behavior) {
         // TODO implement filler-functions for every behaviour
         case 'ship':
-            this.speedFactor =10;
+            this.speedFactor = 10;
 
             this.applyBehavior = this.applyPressedKeys;
             this.bindEvents();
-            this.colliderType = generateBitMask('ship');
-            this.colliderAccept = generateBitMask(['bot', 'projectile']);
+            this.colliderType = bitMapper.generateMask(['ship', 'player']);
+            this.colliderAccept = bitMapper.generateMask(['ship', 'projectile']);
 //            this.prepareRandomMeshShip();
             this.geometry = Designer.torusShip();
 //            this.geometry = Designer.multiNodeShip();
@@ -61,7 +61,7 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
             this.attackRate = (Math.random()*150>>0) + 10;
 
 //            this.applyBehavior = this.followSimple;
-            this.applyBehavior = this.followSimpleConstantSpeed;
+//            this.applyBehavior = this.followSimpleConstantSpeed;
 //            this.applyBehavior = this.followAggressive;
             this.applyBehavior = this.followAggressiveConstantSpeed;
 //            this.applyBehavior = this.seek;
@@ -69,13 +69,13 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
 
             // TODO add behaviours like : patrol, hold distance, free seek
             this.speedFactor = 1; // followAggressive, followAggressiveConstantSpeed & followSimple
-//            this.speedFactor = 500; // followSimpleConstantSpeed
+//            this.speedFactor = 200; // followSimpleConstantSpeed
 //
             this.target = behaviorOptions || this;
             // TODO implement LOCATOR and target capture/loose
 
-            this.colliderType = generateBitMask('bot');
-            this.colliderAccept = generateBitMask(['ship', 'projectile']);
+            this.colliderType = bitMapper.generateMask(['ship', 'bot']);
+            this.colliderAccept = bitMapper.generateMask(['ship', 'projectile']);
             this.distance = 0;
             this.targetAngle = 0;
 //            this.prepareSimpleRandomShip();
@@ -126,13 +126,17 @@ Ship.prototype.start = function(){
 //            self.currenFrame = new Date();
 //            csl(scene.children.length);
             if (self.running) {
-                if (self.collide){
+                if (self.collide && self.collide.source != self){
                     // TODO implements collision checking and reactions
                     self.durability--;
-                    if (window.ship == self) console.log(self.durability);
+
+                    if (bitMapper.is('ship', self.collide)) {
+                        self.stop();
+                    }
+//                    if (window.ship == self) console.log(self.durability);
                     self.collide = false;
                 }
-                if (self.durability < 0) {
+                if (self.durability < 0 ) {
                     self.stop();
                 }
                 self.applyBehavior(time);
