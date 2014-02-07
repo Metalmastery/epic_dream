@@ -25,7 +25,14 @@ function init(){
     helper();
 
     enableCollider();
-    createEnemies(ship);
+
+    document.addEventListener('keyup', function(e){
+        if (e.keyCode == 69){
+            createEnemy(ship);
+        }
+    });
+
+//    createEnemies(ship);
 }
 
 function createEnemies(ship){
@@ -41,6 +48,15 @@ function createEnemies(ship){
         engy.collider.add(dummy);
         engy.addToMainLoop(dummy);
     }
+}
+
+function createEnemy(ship){
+    var a = Math.random() * Math.PI * 2,
+        distance = Math.random() * 500 + 300,
+        dummy = new Ship(ship.x + distance * Math.cos(a), ship.y + distance * Math.sin(a), 'follow', ship);
+    dummy.start();
+    engy.collider.add(dummy);
+    engy.addToMainLoop(dummy);
 }
 
 function bloom(){

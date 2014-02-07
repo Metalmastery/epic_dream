@@ -11,33 +11,33 @@ var engy = (function(){
         gameSpeed = 1,
         // TODO use next vars for slow-down and speed-up
         gameSpeedChangeSteps = 0,
-        gameSpeedChangePerStep = 0;
-
-    function init(){
-
-        document.addEventListener('keyup',function(e){
-            console.log(e);
-            switch (e.keyCode){
-                case 109 :
-                    if (e.altKey){
-                        camera.position.z += 50;
-                    } else {
-                        gameSpeed -= 0.1;
-                    }
-                    break;
-                case 107 :
-                    if (e.altKey){
+        gameSpeedChangePerStep = 0,
+        bindings = {
+            109 : function (e){
+                if (e.altKey){
+                    camera.position.z += 50;
+                } else {
+                    gameSpeed -= 0.1;
+                }
+            },
+            107 : function(e){
+                if (e.altKey){
                     camera.position.z -= 50;
                 } else {
                     gameSpeed += 0.1;
                 }
-                    break;
-                case 90 : setGameSpeedImmediately(0);
-                    break
-                case 88 : setGameSpeedImmediately(1);
-                    break
+            },
+            90 : toggleGamePause,
+
+        };
+
+    function init(){
+
+        document.addEventListener('keyup',function(e){
+            console.log(e.keyCode);
+            if (e.keyCode in bindings){
+                bindings[e.keyCode].apply(window, [e]);
             }
-            console.log('==> GAME SPEED', gameSpeed);
         });
 
         renderer = new THREE.WebGLRenderer({
@@ -55,13 +55,13 @@ var engy = (function(){
         scene.fog = new THREE.Fog(0x0, 1000, 5500);
 
         var ambientColor = new THREE.Color(0x070715);
-        ambientColor.offsetHSL(0,0,0.1);
+        ambientColor.offsetHSL(0,0,0.2);
         var light = new THREE.AmbientLight( ambientColor ); // soft white light
         scene.add( light );
 //
         var directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-        directionalLight.position.set(-0.5, 0.7,0.25).normalize();
-        directionalLight.intensity = 3;
+        directionalLight.position.set(-0.5, 0.7,0.45).normalize();
+        directionalLight.intensity = 4;
         scene.add(directionalLight);
 
         camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1, 10000 );
@@ -71,6 +71,15 @@ var engy = (function(){
         // TODO implement parallax background
 //        setBackground();
 //        gridHelper();
+    }
+
+    function createEnemy(ship){
+        var a = Math.random() * Math.PI * 2,
+            distance = Math.random() * 1000 + 300,
+            dummy = new Ship(distance * Math.cos(a), distance * Math.sin(a), 'follow', ship);
+            dummy.start();
+            collider.add(dummy);
+            addToMainLoop(dummy);
     }
 
     function attachCamera(obj){
@@ -85,12 +94,15 @@ var engy = (function(){
         }
     }
 
+    function toggleGamePause(){
+        gameSpeed = + (!gameSpeed);
+    }
+
     function setGameSpeedGradually(speed){
         gameSpeedChangeSteps = 50;
         gameSpeedChangePerStep = (speed - gameSpeed) / gameSpeedChangeSteps;
         // TODO change the speed of the game in a given time
     }
-
 
     function setBackground(){
         var floorTexture = new THREE.ImageUtils.loadTexture( 'img/galaxy_starfield.png' );

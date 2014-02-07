@@ -5,16 +5,14 @@ var Designer = (function(){
             var hsl = color.clone().getHSL();
             return new THREE.MeshLambertMaterial( {
                 color: color,
-//                specular:color.clone().offsetHSL(0,0,(0.9-hsl.l)),
-                shininess: 10,
                 map: lightmap,
                 ambient : 0x99ccff,
 //                envMap: map,
 //            normalMap: floorTexture,
-//                combine: THREE.MixOperation,
-                combine: THREE.MultiplyOperation,
+                combine: THREE.MixOperation,
+//                combine: THREE.MultiplyOperation,
 //                emissive : 0x101530,
-                specularMap : map,
+//                specularMap : map,
                 reflectivity: 0.1,
                 side : THREE.DoubleSide
             });
@@ -56,7 +54,7 @@ var Designer = (function(){
                 color: color,
                 specular:color.clone().offsetHSL(0,0,(0.9-hsl.l)),
                 ambient: 0x2266ee,
-                shininess: 10,
+                shininess: 50,
                 map: map,
 //            envMap: floorTexture,
 //            normalMap: floorTexture,
@@ -109,6 +107,7 @@ var Designer = (function(){
         "use strict";
 
         var floorTexture = new THREE.ImageUtils.loadTexture( 'img/noise2.jpg' );
+        var texture = new THREE.ImageUtils.loadTexture( 'img/PlatingDemo.jpg' );
         var lightmap = new THREE.ImageUtils.loadTexture( 'img/noise3_lightmap.jpg' );
         floorTexture.wrapS = floorTexture.wrapT = THREE.MirroredRepeatWrapping;
 
@@ -161,14 +160,14 @@ var Designer = (function(){
         var cab   = THREE.CSG.toCSG(cabine, new THREE.Vector3(offsets.cabineX,0,offsets.cabineZ));
         body = body.union(cab);
 
-        var hsl = color.getHSL();
+//        var hsl = color.getHSL();
         // TODO adjust colors in material
 
         geometry = THREE.CSG.fromCSG(body);
         _calculateUVsAfterCSG(geometry);
 
         // TODO adjust colors in material
-//        var material = materials.phongWithAmbient(color, floorTexture);
+//        var material = materials.phongWithAmbient(color, texture);
         var material = materials.lambertBasic(color, floorTexture, lightmap);
 
         geometry = new THREE.Mesh(geometry, material);
@@ -185,7 +184,7 @@ var Designer = (function(){
 
         var color = new THREE.Color();
 //        color.setHSL(Math.random(),1,0.5);
-        color.setHSL(0.5,1,0.5);
+        color.setHSL(0.8,1,0.5);
         var geometry = new THREE.TorusGeometry(5, 2);
 
         var scaler = new THREE.Matrix4();
@@ -212,6 +211,64 @@ var Designer = (function(){
         return geometry;
     }
 
+    function multiNodeShip(){
+        "use strict";
+
+        var lightmap = new THREE.ImageUtils.loadTexture( 'img/noise3_lightmap.jpg' );
+
+        var color = new THREE.Color();
+        color.setHSL(Math.random(),1,0.5);
+
+        var bodyPart1 = new THREE.CylinderGeometry(1.3, 4, 20);
+        var bodyPart2 = new THREE.SphereGeometry(4.2);
+
+        var scaler = new THREE.Matrix4();
+        scaler.scale({x : 2.5, y : 1, z : 1});
+
+        var rotator = new THREE.Matrix4();
+        rotator.makeRotationZ(1.57);
+
+        bodyPart2.applyMatrix(scaler);
+
+        var cabine1 = new THREE.SphereGeometry(2);
+        var cabine2 = new THREE.SphereGeometry(2);
+        cabine1.applyMatrix(scaler);
+        cabine2.applyMatrix(scaler.scale({x : 0.5, y : 2, z : 1}));
+
+        var engine1 = new THREE.CylinderGeometry(0.7, 1.5, 4);
+        var engine2 = new THREE.CylinderGeometry(0.7, 1.5, 4);
+        var joint1 = new THREE.CylinderGeometry(0.01, 1.5, 12);
+        var joint2 = new THREE.CylinderGeometry(1.5, 0.01, 12);
+
+        bodyPart1.applyMatrix(rotator);
+
+        engine1.applyMatrix(rotator);
+        engine2.applyMatrix(rotator);
+        rotator.makeRotationZ(0.5);
+        joint1.applyMatrix(rotator);
+        joint2.applyMatrix(rotator.getInverse(rotator));
+        var body1 = THREE.CSG.toCSG(bodyPart1,new THREE.Vector3(3,0,0));
+        var body2   = THREE.CSG.toCSG(bodyPart2, new THREE.Vector3(2,0,0));
+        var cab1   = THREE.CSG.toCSG(cabine1, new THREE.Vector3(-3.5,0,2));
+        var cab2   = THREE.CSG.toCSG(cabine2, new THREE.Vector3(6,0,0.5));
+        engine1   = THREE.CSG.toCSG(engine1, new THREE.Vector3(-8,5,0));
+        engine2   = THREE.CSG.toCSG(engine2, new THREE.Vector3(-8,-5,0));
+        joint1   = THREE.CSG.toCSG(joint1, new THREE.Vector3(-7,5,0));
+        joint2   = THREE.CSG.toCSG(joint2, new THREE.Vector3(-7,-5,0));
+
+        var geometry = THREE.CSG.fromCSG(body1.intersect(body2).union(cab1).union(cab2).union(joint1).union(joint2).union(engine1).union(engine2));
+        _calculateUVsAfterCSG(geometry);
+
+        // TODO adjust colors in material
+
+//        var material = materials.phongEmissive(color, lightmap, lightmap);
+        var material = materials.lambertBasic(color, lightmap, lightmap);
+
+        geometry = new THREE.Mesh(geometry, material);
+        geometry.rotation.order = 'ZYX';
+        return geometry;
+    }
+
     function spheresIntersect(){
 
     }
@@ -223,7 +280,8 @@ var Designer = (function(){
     return {
         torusShip : torusShip,
         basicShip : basicShip,
-        simple2DShip : simple2DShip
+        simple2DShip : simple2DShip,
+        multiNodeShip : multiNodeShip
     }
 
 })();

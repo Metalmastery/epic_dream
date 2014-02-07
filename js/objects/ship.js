@@ -45,6 +45,7 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
             this.colliderAccept = generateBitMask(['bot', 'projectile']);
 //            this.prepareRandomMeshShip();
             this.geometry = Designer.torusShip();
+//            this.geometry = Designer.multiNodeShip();
             window.ship = this;
             break;
         case 'ws':
