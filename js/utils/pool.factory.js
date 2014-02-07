@@ -12,8 +12,8 @@ function noPool(constructor, poolSize){
     }
 }
 
-function Pool(constructor, poolSize){
-    if (typeof constructor != 'function' || !poolSize){
+function Pool(options){
+    if (typeof options.constructor != 'function' || !options.poolSize || typeof options.resetObjectProps != 'function'){
         throw new Error('can\'t create pool, not enough arguments');
     }
 
@@ -21,28 +21,31 @@ function Pool(constructor, poolSize){
         free = [],
         busy = [],
         released = [],
-        readyObjects = 0;
+        readyObjects = 0,
+        blankFunction = function(){};
 
-//    var self = this;
-//    self.pool = pool;
-//    self.free = free;
-//    self.busy = busy;
-//    self.released = released;
-//    self.readyObjects = readyObjects;
+    var constructor = options.constructor || blankFunction,
+        resetObjectProps = options.resetObjectProps || blankFunction;
 
-
-    for (var i = 0; i < poolSize; i++) {
-        fillPool(i);
+    function fillPool(){
+        for (var i = 0; i < poolSize; i++) {
+            addPoolItem(i);
+        }
     }
 
-    function fillPool(i){
+    function addPoolItem(i){
 //        console.log('fillPool');
         var obj = new constructor();
         obj.id = i;
         pool.push(obj);
         free.push(i);
+
         readyObjects++;
     }
+
+//    function resetObjectProps(){
+//
+//    }
 
     function setReleasedAsFree(){
 //        console.log('setReleasedAsFree');
@@ -71,12 +74,3 @@ function Pool(constructor, poolSize){
     }
 }
 
-function testPool(){
-    this.values = [];
-    for (var i = 0; i < 10; i++) {
-        this.values.push(Math.random()*100>>0);
-    }
-    return this;
-}
-
-var pool = new Pool(testPool, 2);
