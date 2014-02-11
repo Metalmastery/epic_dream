@@ -33,6 +33,8 @@ var engy = (function(){
 
     function init(){
 
+        // TODO global color scheme for each game based on color triad (for example)
+
         document.addEventListener('keyup',function(e){
 //            console.log(e.keyCode);
             if (e.keyCode in bindings){
@@ -45,7 +47,7 @@ var engy = (function(){
 //        preserveDrawingBuffer: true,
             alpha : true
         });
-        renderer.setClearColor(0x002233, 1);
+        renderer.setClearColor(0, 1);
 
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setFaceCulling('front', 'cw');
@@ -55,12 +57,12 @@ var engy = (function(){
         scene.fog = new THREE.Fog(0x0, 1000, 5500);
 
         var ambientColor = new THREE.Color(0x070715);
-        ambientColor.offsetHSL(0,0,0.2);
+        ambientColor.offsetHSL(0,0,-0.2);
         var light = new THREE.AmbientLight( ambientColor ); // soft white light
         scene.add( light );
 //
         var directionalLight = new THREE.DirectionalLight(0xdddfff, 1);
-        directionalLight.position.set(-0.5, 0.7,0.45).normalize();
+        directionalLight.position.set(-0.5, 0.7,0.25).normalize();
         directionalLight.intensity = 4;
         scene.add(directionalLight);
 
@@ -105,27 +107,49 @@ var engy = (function(){
     }
 
     function setBackground(){
-        var floorTexture = new THREE.ImageUtils.loadTexture( 'img/galaxy_starfield.png' );
-//        var floorTexture = new THREE.ImageUtils.loadTexture( 'img/checkerboard.jpg' );
+//        var floorTexture = new THREE.ImageUtils.loadTexture( 'img/galaxy_starfield.png' );
+        var floorTexture = new THREE.ImageUtils.loadTexture( 'img/worley3.png' );
         floorTexture.repeat.set( 50,50 );
-//        floorTexture.offset.set( 3, 2 );
-//        floorTexture.needsUpdate = true;
         floorTexture.wrapS =THREE.RepeatWrapping;
             floorTexture.wrapT = THREE.MirroredRepeatWrapping;
-        var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide, transparent : true, opacity : 0.5 } );
-        var floorMaterial2 = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide, transparent : true, opacity : 0.5 } );
+//        floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
 
-        var floorGeometry = new THREE.PlaneGeometry(10000, 10000, 10, 10);
-        var floor = new THREE.Mesh(floorGeometry, floorMaterial);
-        floor.position.z = -800;
+        var floorGeometry = new THREE.PlaneGeometry(10000, 10000, 50, 50);
+        var offset = Math.random(),
+            range = 0.1 * Math.random() + 0.1;
+        console.log(Designer.colors.triad);
+//        var color = Designer.colors.base.offsetHSL(0, 0, -Designer.colors.base.getHSL().l/2),
+//            hsl = color.getHSL();
+        for (var i in floorGeometry.vertices){
+            var color = Designer.colors.analog[Math.random()*2>>0].clone().offsetHSL(Math.random()*0.1-0.05, -0.5, Math.random()*0.6 - 0.4);
+            floorGeometry.colors[i] = color;
+        }
+        var mapper = ['a', 'b', 'c'];
+        for (var i in floorGeometry.faces){
+            for (var j = 0; j < 3; j++) {
+                floorGeometry.faces[i].vertexColors[j] = floorGeometry.colors[floorGeometry.faces[i][mapper[j]]];
+
+            }
+        }
+
+        var floorMaterial = new THREE.MeshBasicMaterial( { vertexColors : THREE.VertexColors,map: floorTexture, side: THREE.DoubleSide, transparent : true, opacity : 0.5 } );
+        var floorMaterial2 = new THREE.MeshBasicMaterial( { vertexColors : THREE.VertexColors,map: floorTexture, side: THREE.DoubleSide, transparent : true, opacity : 0.3 } );
+//        var floorMaterial2 = new THREE.MeshBasicMaterial( { /*color : 0x112455,*/ map: floorTexture, side: THREE.DoubleSide, transparent : true, opacity : 0.5 } );
+
+
+
+        var floor = new THREE.Mesh(floorGeometry, floorMaterial2);
+        floor.position.z = -1600;
+        floor.rotation.z = -2;
         scene.add(floor);
 
         window.floor = floor;
 
-        var floor2 = new THREE.Mesh(floorGeometry, floorMaterial2);
-        floor2.position.z = -1200;
+        var floor2 = new THREE.Mesh(floorGeometry, floorMaterial);
+        floor2.position.z = -1700;
         floor2.rotation.z = -1;
-        floor2.material.color.offsetHSL(0,0,1);
+//        floor.material.color.offsetHSL(0,0,-0.1);
+//        floor2.material.color.offsetHSL(0,0,-0.1);
         scene.add(floor2);
     }
 

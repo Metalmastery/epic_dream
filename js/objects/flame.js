@@ -1,19 +1,24 @@
-// TODO implement bufferGeometry
-// TODO implement objectPool system to manage busy/gree and visible\invisible bullets
 
-var Bullet = new particles();
-function particles(){
+var Flame = new particles2(Designer.colors.split[1]);
+//var enemyFlame = new particles2(Designer.colors.split[2]);
+function particles2(color){
 
     var mainScene,
-        projectileLifetime = 200,
-        projectileSpeed = 10,
+        projectileLifetime = 100,
+        projectileSpeed = 0.2,
         activeProjectiles = {},
         currentAnimationFrame = null,
         materials = [],
         geometry,
         particleSystem,
-        amount = 500,
+        amount = 2000,
         resizeAddition = 100;
+
+//    var baseColor = (new THREE.Color()).setHSL(0.2, 1, 0.7),
+//    var baseColor = (new THREE.Color()).setHSL(0.7, 1, 0.7),
+//    var baseColor = Designer.colors.base.clone().offsetHSL(0, 0, 0.2),
+    var baseColor = color.clone().offsetHSL(0, 0, 0.2),
+        hsl = baseColor.getHSL();
 
     /* object pool here */
     var pool = [],
@@ -32,7 +37,7 @@ function particles(){
             position : geometry.vertices[i],
             speedX : 0,
             speedY : 0,
-            lifetime : projectileLifetime
+            lifetime : projectileLifetime * Math.random()
         };
         pool.push(obj);
         free.push(i);
@@ -45,7 +50,8 @@ function particles(){
         obj.position.collide = false;
         obj.speedX = 0;
         obj.speedY = 0;
-        obj.lifetime = projectileLifetime;
+        obj.lifetime = projectileLifetime * Math.random();
+        obj.position.color.set(baseColor);
     }
 
     function setReleasedAsFree(){
@@ -60,7 +66,7 @@ function particles(){
     function getObject(){
 //        console.log(readyObjects);
         if (!readyObjects){
-                console.log('! no ready objects');
+            console.log('! no ready objects', released.length);
             if (released.length){
                 console.log('! set released as free');
                 setReleasedAsFree();
@@ -79,11 +85,9 @@ function particles(){
     }
     /* pool end */
 
-//    materials.push(new THREE.ParticleBasicMaterial({color : 0xffffff, size : 20}));
     materials.push(new THREE.ParticleBasicMaterial({
-//        color: 0x33bbcc,
-        color: Designer.colors.complementary.clone().offsetHSL(0,0,0.5-Designer.colors.complementary.getHSL().l),
-        size: 35,
+        vertexColors : THREE.VertexColors,
+        size: 25,
         map: THREE.ImageUtils.loadTexture(
             "img/particle.png"
         ),
@@ -98,15 +102,19 @@ function particles(){
         var i = size;
         while (i--){
 //            geometry.vertices.push(new THREE.Vector3(0,0,0));
+//            geometry.colors[i] = (new THREE.Color(0xff0000));
+            geometry.colors.push((new THREE.Color()).set(baseColor));
             geometry.vertices.push({
                 x : 0,
                 y : 0,
                 z : 0,
+                color : geometry.colors[geometry.colors.length - 1],
                 radius : 5,
                 source : null,
                 colliderAccept : bitMapper.generateMask(['ship', 'bot']),
                 colliderType : bitMapper.generateMask('projectile')
             });
+
         }
     }
 
@@ -116,8 +124,7 @@ function particles(){
         fillGeometry(amount);
         fillPool();
         particleSystem = new THREE.ParticleSystem(geometry, materials[0]);
-//        particleSystem.geometry
-//        mainScene.add(particleSystem);
+        window.flames = particleSystem;
     }
 
     function attachToScene(scene){
@@ -130,12 +137,12 @@ function particles(){
         for (var i in activeProjectiles){
             currentProjectile = pool[activeProjectiles[i]];
             currentProjectile.lifetime-=time;
-            if (currentProjectile.position.collide == currentProjectile.position.source){
-                currentProjectile.position.collide = null;
-            }
-            if (currentProjectile.lifetime>0 && !currentProjectile.position.collide) {
+            currentProjectile.position.color.offsetHSL(-0.01, 0, -0.02);
+
+            if (currentProjectile.lifetime>0) {
                 currentProjectile.position.x += currentProjectile.speedX * time;
                 currentProjectile.position.y += currentProjectile.speedY * time;
+//                console.log(currentProjectile.position.color);
             } else {
                 if (activeProjectiles[i]) {
                     releaseObject(currentProjectile);
@@ -143,7 +150,8 @@ function particles(){
                 }
             }
         }
-        particleSystem.geometry.verticesNeedUpdate = true;
+        geometry.verticesNeedUpdate = true;
+        geometry.colorsNeedUpdate = true;
     }
 
     function stop(){
@@ -153,15 +161,16 @@ function particles(){
 
     function fire(shooter, angle){
         var proj = getObject();
+        angle += 3.07 + Math.random()*0.14;
 //        console.log(proj, shooter.geometry.position, bulletSystemGeometry);
+//        var cos = Math.cos(angle), sin = Math.sin(angle);
         var cos = Math.cos(angle), sin = Math.sin(angle);
         var selfSpeedX = cos*projectileSpeed,
             selfSpeedY = sin*projectileSpeed;
         proj.speedX = selfSpeedX + shooter.currentSpeedX;
         proj.speedY = selfSpeedY + shooter.currentSpeedY;
-        proj.position.x = shooter.geometry.position.x + proj.speedX;
-        proj.position.y = shooter.geometry.position.y + proj.speedY;
-        proj.position.source = shooter;
+        proj.position.y = shooter.geometry.position.y + sin * 7 + shooter.currentSpeedY;
+        proj.position.x = shooter.geometry.position.x + cos * 7 + shooter.currentSpeedX;
 
         activeProjectiles[proj.id] = proj.id;
         return proj;

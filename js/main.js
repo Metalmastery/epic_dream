@@ -9,12 +9,14 @@ function init(){
 
     Explosion.attachToScene(engy.scene);
     Bullet.attachToScene(engy.scene);
+    Flame.attachToScene(engy.scene);
 
     var ship = new Ship(0, 0, 'ship', null);
     engy.followCamera(ship);
     ship.start();
 
     engy.addToMainLoop(Bullet);
+    engy.addToMainLoop(Flame);
     engy.addToMainLoop(ship);
     engy.collider.add(ship);
 

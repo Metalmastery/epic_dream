@@ -5,15 +5,13 @@ var Designer = (function(){
             var hsl = color.clone().getHSL();
             return new THREE.MeshLambertMaterial( {
                 color: color,
-                map: lightmap,
+//                map: map,
                 ambient : 0x99ccff,
 //                envMap: map,
 //            normalMap: floorTexture,
-                combine: THREE.MixOperation,
+//                combine: THREE.MixOperation,
 //                combine: THREE.MultiplyOperation,
-//                emissive : 0x101530,
-//                specularMap : map,
-                reflectivity: 0.1,
+                reflectivity: 0,
                 side : THREE.DoubleSide
             });
         },
@@ -66,6 +64,30 @@ var Designer = (function(){
         }
     };
 
+    var colors = {
+        base : null,
+        complementary : null,
+        triad : [],
+        split : [],
+        analog : []
+    };
+
+    colors.base = (new THREE.Color()).setHSL(Math.random(), 1, 0.5);
+
+    colors.triad.push(colors.base.clone());
+    colors.triad.push(colors.base.clone().offsetHSL(0.33, 0, 0));
+    colors.triad.push(colors.base.clone().offsetHSL(-0.33, 0, 0));
+
+    colors.complementary = colors.base.clone().offsetHSL(0.5, 0, 0);
+
+    colors.split.push(colors.base.clone());
+    colors.split.push(colors.base.clone().offsetHSL(0.41, 0, 0));
+    colors.split.push(colors.base.clone().offsetHSL(-0.41, 0, 0));
+
+    colors.analog.push(colors.base.clone().offsetHSL(0.08, 0, 0));
+    colors.analog.push(colors.base.clone().offsetHSL(-0.08, 0, 0));
+//    colors.triad.push((colors.base.clone().getHSL().h + 0.33) % 1 );
+
     function _calculateUVsAfterCSG(geometry){
         geometry.computeBoundingBox();
         var max = geometry.boundingBox.max,
@@ -111,8 +133,8 @@ var Designer = (function(){
         var lightmap = new THREE.ImageUtils.loadTexture( 'img/noise3_lightmap.jpg' );
         floorTexture.wrapS = floorTexture.wrapT = THREE.MirroredRepeatWrapping;
 
-        var color = new THREE.Color();
-        color.setHSL(Math.random(),1,0.5);
+        var color = colors.split[1].clone().offsetHSL(0,-Math.random()*0.5,0);
+//        color.setHSL(Math.random(),0.7,0.5);
         var offsets = {
             frontX : 7 + Math.random()*3,
             frontY : 7 + Math.random()*3,
@@ -182,9 +204,9 @@ var Designer = (function(){
         var lightmap = new THREE.ImageUtils.loadTexture( 'img/noise3_lightmap.jpg' );
         floorTexture.wrapS = floorTexture.wrapT = THREE.MirroredRepeatWrapping;
 
-        var color = new THREE.Color();
-//        color.setHSL(Math.random(),1,0.5);
-        color.setHSL(0.8,1,0.5);
+        var color = colors.triad[2];
+//        color.setHSL(Math.random(),1,0.3);
+//        color.setHSL(0.8,1,0.5);
         var geometry = new THREE.TorusGeometry(5, 2);
 
         var scaler = new THREE.Matrix4();
@@ -194,10 +216,10 @@ var Designer = (function(){
         var sub = new THREE.SphereGeometry(5);
         sub.applyMatrix(scaler);
 
-        var torus = THREE.CSG.toCSG(new THREE.TorusGeometry(5, 2, 5, 50),new THREE.Vector3(0,0,0));
+        var torus = THREE.CSG.toCSG(new THREE.TorusGeometry(5, 2, 5, 20),new THREE.Vector3(0,0,0));
         var sphere   = THREE.CSG.toCSG(sub, new THREE.Vector3(3.5,0,0));
         var cab   = THREE.CSG.toCSG(cabine, new THREE.Vector3(-3.5,0,0));
-
+        console.log(cab);
         var geometry = THREE.CSG.fromCSG(torus.subtract(sphere).union(cab));
         _calculateUVsAfterCSG(geometry);
 
@@ -281,7 +303,8 @@ var Designer = (function(){
         torusShip : torusShip,
         basicShip : basicShip,
         simple2DShip : simple2DShip,
-        multiNodeShip : multiNodeShip
+        multiNodeShip : multiNodeShip,
+        colors : colors
     }
 
 })();
