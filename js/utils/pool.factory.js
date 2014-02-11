@@ -1,19 +1,19 @@
 
 
-function noPool(constructor, poolSize){
-    if (typeof constructor != 'function' || !poolSize){
+function noPool(constructorFn, poolSize){
+    if (typeof constructorFn != 'function' || !poolSize){
         throw new Error('can\'t create pool, not enough arguments');
     }
 
     return {
         getObject : function(){
-            return new constructor();
+            return new constructorFn();
         }
     }
 }
 
 function Pool(options){
-    if (typeof options.constructor != 'function' || !options.poolSize || typeof options.resetObjectProps != 'function'){
+    if (typeof options.constructorFn != 'function' || !options.poolSize || typeof options.resetObjectProps != 'function'){
         throw new Error('can\'t create pool, not enough arguments');
     }
 
@@ -24,7 +24,7 @@ function Pool(options){
         readyObjects = 0,
         blankFunction = function(){};
 
-    var constructor = options.constructor || blankFunction,
+    var constructor = options.constructorFn || blankFunction,
         resetObjectProps = options.resetObjectProps || blankFunction;
 
     function fillPool(){
@@ -35,7 +35,7 @@ function Pool(options){
 
     function addPoolItem(i){
 //        console.log('fillPool');
-        var obj = new constructor();
+        var obj = new constructorFn();
         obj.id = i;
         pool.push(obj);
         free.push(i);
