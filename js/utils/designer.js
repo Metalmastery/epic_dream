@@ -133,7 +133,7 @@ var Designer = (function(){
         var lightmap = new THREE.ImageUtils.loadTexture( 'img/noise3_lightmap.jpg' );
         floorTexture.wrapS = floorTexture.wrapT = THREE.MirroredRepeatWrapping;
 
-        var color = colors.split[1].clone().offsetHSL(0,-Math.random()*0.5,0);
+        var color = colors.split[1].clone().offsetHSL(Math.random() * 0.1 - 0.5,-Math.random()*0.5,0);
 //        color.setHSL(Math.random(),0.7,0.5);
         var offsets = {
             frontX : 7 + Math.random()*3,
