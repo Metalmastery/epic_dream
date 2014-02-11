@@ -132,7 +132,7 @@ var engy = (function(){
             }
         }
 
-        var floorMaterial = new THREE.MeshBasicMaterial( { vertexColors : THREE.VertexColors,map: floorTexture, side: THREE.DoubleSide, transparent : true, opacity : 0.5 } );
+        var floorMaterial = new THREE.MeshBasicMaterial( { vertexColors : THREE.VertexColors,map: floorTexture, side: THREE.DoubleSide, color : new THREE.Color(0x777777) } );
         var floorMaterial2 = new THREE.MeshBasicMaterial( { vertexColors : THREE.VertexColors,map: floorTexture, side: THREE.DoubleSide, transparent : true, opacity : 0.3 } );
 //        var floorMaterial2 = new THREE.MeshBasicMaterial( { /*color : 0x112455,*/ map: floorTexture, side: THREE.DoubleSide, transparent : true, opacity : 0.5 } );
 
