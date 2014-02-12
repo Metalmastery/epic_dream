@@ -208,10 +208,10 @@ Ship.prototype.followAggressive = function(delta) {
 //    var deltaX =  Math.cos(this.rotationAngle)*delta/this.speedFactor*(this.distance - 200)/1000,
 //        deltaY = Math.sin(this.rotationAngle)*delta/this.speedFactor*(this.distance - 200)/1000;
 
-//    if (this.distance < 150){
-////        this.targetAngle = (this.targetAngle/Math.abs(this.targetAngle))*(3 - Math.abs(this.targetAngle));
-//        this.targetAngle = -this.targetAngle/Math.abs(this.targetAngle)*2.1 ;
-//    }
+    if (this.distance < 150){
+//        this.targetAngle = (this.targetAngle/Math.abs(this.targetAngle))*(3 - Math.abs(this.targetAngle));
+        this.targetAngle = -this.targetAngle/Math.abs(this.targetAngle)*2.1 ;
+    }
 
     var deltaX =  Math.cos(this.rotationAngle)*delta/this.speedFactor,
         deltaY = Math.sin(this.rotationAngle)*delta/this.speedFactor,

@@ -4,13 +4,13 @@ var Designer = (function(){
         lambertBasic : function(color, map, lightmap){
             var hsl = color.clone().getHSL();
             return new THREE.MeshLambertMaterial( {
-                color: color,
-//                map: map,
-                ambient : 0x99ccff,
+//                color: color,
+                map: map,
+//                ambient : 0x99ccff,
 //                envMap: map,
-//            normalMap: floorTexture,
+//            normalMap: lightmap,
 //                combine: THREE.MixOperation,
-//                combine: THREE.MultiplyOperation,
+                combine: THREE.MultiplyOperation,
                 reflectivity: 0,
                 side : THREE.DoubleSide
             });
@@ -88,6 +88,76 @@ var Designer = (function(){
     colors.analog.push(colors.base.clone().offsetHSL(-0.08, 0, 0));
 //    colors.triad.push((colors.base.clone().getHSL().h + 0.33) % 1 );
 
+    function generateTexture(width, height, points, color){
+//        var offsets = {
+//            frontX : 7 + Math.random()*3,
+//            frontY : 7 + Math.random()*3,
+//            backX : 2 + Math.random()*8,
+//            backY : - 7 + Math.random()*4,
+//            tailX : 2 + Math.random()*8,
+//            tailZ : 0,
+//            cabineX : Math.random(),
+//            cabineZ : Math.random()*2,
+//            cabineScale : 1.2 + Math.random()
+//
+//        };
+        var canvas = document.createElement('canvas'),
+            ctx = canvas.getContext('2d');
+
+        var size = points.frontX + Math.min(points.backX, points.tailX),
+            factor = width / size,
+            halfHeight = height / 2,
+            halfWidth = width / 2;
+
+        canvas.width = width || 100;
+        canvas.height = height || 100;
+        var back = '#222222';
+
+//        factor = 20;
+
+        ctx.fillStyle = '#' + color.getHexString();
+
+        ctx.fillRect(0,0,width,height);
+
+        ctx.beginPath();
+
+        ctx.moveTo(halfWidth + points.frontX*factor, halfHeight);
+
+        ctx.lineTo(halfWidth - points.backX*factor, halfHeight - points.backY*factor);
+        ctx.lineTo(halfWidth - points.tailX*factor, halfHeight);
+        ctx.lineTo(halfWidth - points.backX*factor, halfHeight + points.backY*factor);
+        ctx.lineTo(halfWidth + points.frontX*factor, halfHeight);
+
+        ctx.fillStyle = back;
+        ctx.fill();
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.translate(halfWidth,halfHeight);
+        ctx.scale(points.cabineScale, 1);
+
+        ctx.arc(0,0,2.5*factor,0,6.28,false);
+
+        ctx.restore();
+        ctx.closePath();
+        ctx.fillStyle = '#ffffff';
+
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(halfWidth, halfHeight);
+        ctx.lineTo(width, halfHeight);
+        ctx.moveTo(halfWidth, halfHeight + 2.5*factor);
+        ctx.lineTo(halfWidth, halfHeight - 2.5*factor);
+        ctx.strokeStyle = back;
+        ctx.lineWidth =  factor;
+        ctx.stroke();
+        window.ctx = ctx;
+
+//        document.body.appendChild(canvas);
+
+        return canvas.toDataURL('png');
+    }
+
     function _calculateUVsAfterCSG(geometry){
         geometry.computeBoundingBox();
         var max = geometry.boundingBox.max,
@@ -128,13 +198,13 @@ var Designer = (function(){
     function basicShip(){
         "use strict";
 
-        var floorTexture = new THREE.ImageUtils.loadTexture( 'img/noise2.jpg' );
+//        var floorTexture = new THREE.ImageUtils.loadTexture( 'img/noise2.jpg' );
         var texture = new THREE.ImageUtils.loadTexture( 'img/PlatingDemo.jpg' );
         var lightmap = new THREE.ImageUtils.loadTexture( 'img/noise3_lightmap.jpg' );
-        floorTexture.wrapS = floorTexture.wrapT = THREE.MirroredRepeatWrapping;
 
-        var color = colors.split[1].clone().offsetHSL(Math.random() * 0.1 - 0.5,-Math.random()*0.5,0);
-//        color.setHSL(Math.random(),0.7,0.5);
+
+        var color = colors.split[1].clone();//.offsetHSL(Math.random() * 0.1 - 0.5,-Math.random()*0.5,0);
+//        color.setHSL(Math.random(),1,0.5);
         var offsets = {
             frontX : 7 + Math.random()*3,
             frontY : 7 + Math.random()*3,
@@ -147,6 +217,10 @@ var Designer = (function(){
             cabineScale : 1.2 + Math.random()
 
         };
+
+        var floorTexture = new THREE.ImageUtils.loadTexture( generateTexture(200,200,offsets,color) );
+        floorTexture.wrapS = floorTexture.wrapT = THREE.MirroredRepeatWrapping;
+        lightmap = floorTexture;
 
         var geometry = new THREE.Geometry();
         geometry.vertices.push(new THREE.Vector3(offsets.frontX, 0, 0));    // front corner

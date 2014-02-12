@@ -56,8 +56,8 @@ var engy = (function(){
         scene = new THREE.Scene();
         scene.fog = new THREE.Fog(0x0, 1000, 5500);
 
-        var ambientColor = new THREE.Color(0x070715);
-        ambientColor.offsetHSL(0,0,-0.2);
+        var ambientColor = new THREE.Color(0x707075);
+        ambientColor.offsetHSL(0,0,-0.3);
         var light = new THREE.AmbientLight( ambientColor ); // soft white light
         scene.add( light );
 //
