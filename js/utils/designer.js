@@ -104,14 +104,14 @@ var Designer = (function(){
         var canvas = document.createElement('canvas'),
             ctx = canvas.getContext('2d');
 
-        var size = points.frontX + Math.min(points.backX, points.tailX),
+        var size = points.frontX + Math.max(points.backX, points.tailX),
             factor = width / size,
             halfHeight = height / 2,
             halfWidth = width / 2;
 
         canvas.width = width || 100;
         canvas.height = height || 100;
-        var back = '#222222';
+        var back = '#333333';
 
 //        factor = 20;
 
