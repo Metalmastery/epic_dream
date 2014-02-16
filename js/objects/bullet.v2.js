@@ -136,6 +136,12 @@ function particles(){
             if (currentProjectile.lifetime>0 && !currentProjectile.position.collide) {
                 currentProjectile.position.x += currentProjectile.speedX * time;
                 currentProjectile.position.y += currentProjectile.speedY * time;
+                shaderFlame.fire({
+                    currentSpeedX : 0,
+                    currentSpeedY : 0,
+                    rotationAngle : currentProjectile.position.source.rotationAngle,
+                    geometry : currentProjectile
+                });
             } else {
                 if (activeProjectiles[i]) {
                     releaseObject(currentProjectile);
