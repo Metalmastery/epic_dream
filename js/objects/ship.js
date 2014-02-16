@@ -18,6 +18,8 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
     this.x = startX ? startX : 0;
     this.y = startY ? startY : 0;
 
+    this.flame = shaderFlame;
+
     // TODO implement damage, durability indication
     // TODO can compute the size of the indication box with boundingSphere
     this.durability = (Math.random()*50>>0) + 20;
@@ -222,7 +224,7 @@ Ship.prototype.followAggressive = function(delta) {
         // TODO implement speed limit
         this.currentSpeedX += deltaX;
         this.currentSpeedY += deltaY;
-        Flame.fire(this, this.rotationAngle);
+        this.flame.fire(this, this.rotationAngle);
         invertAngle = -1;
     }
 
@@ -244,7 +246,7 @@ Ship.prototype.followAggressive = function(delta) {
 };
 
 Ship.prototype.followAggressiveConstantSpeed = function(delta) {
-    Flame.fire(this, this.rotationAngle);
+    this.flame.fire(this, this.rotationAngle);
     this.distance = Math.sqrt(Math.pow(this.x - this.target.x,2) + Math.pow(this.y - this.target.y,2));
     this.targetAngle = Math.atan2((this.x - this.target.x)*Math.sin(this.rotationAngle) - Math.cos(this.rotationAngle)*(this.y - this.target.y), (this.x - this.target.x)* Math.cos(this.rotationAngle) + Math.sin(this.rotationAngle)*(this.y - this.target.y));
     this.currentSpeedX = Math.cos(this.rotationAngle)*delta/this.speedFactor;
@@ -277,7 +279,7 @@ Ship.prototype.followSimple = function(delta) {
     if (Math.pow(this.currentSpeedX + deltaX, 2) + Math.pow(this.currentSpeedY + deltaY, 2) < 36){
         this.currentSpeedX += deltaX;
         this.currentSpeedY += deltaY;
-        Flame.fire(this, this.rotationAngle);
+        this.flame.fire(this, this.rotationAngle);
     }
     this.rotationAngle = this.targetAngle + Math.PI;
 
@@ -345,7 +347,7 @@ Ship.prototype.keydownEvents = {
             this.currentSpeedX = this.currentSpeedX + Math.cos(this.rotationAngle)*time/this.speedFactor;
             this.currentSpeedY = this.currentSpeedY + Math.sin(this.rotationAngle)*time/this.speedFactor;
         }
-        Flame.fire(this, this.rotationAngle);
+        this.flame.fire(this, this.rotationAngle);
     },
     '83' : function(time){
 //        this.currentSpeedX = this.currentSpeedX - Math.cos(this.rotationAngle)*time/this.speedFactor;
