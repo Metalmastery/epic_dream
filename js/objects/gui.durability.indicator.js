@@ -51,7 +51,7 @@ function bufferLineParticles(){
 
         backColor:     { type: "c", value: colors.back },
         frontColor:     { type: "c", value: colors.front },
-        texture:   { type: "t", value: THREE.ImageUtils.loadTexture( "img/particles/indicator.png" ) }
+        texture:   { type: "t", value: THREE.ImageUtils.loadTexture( "img/particles/indicator_opaque.png" ) }
 
     };
 
@@ -62,8 +62,8 @@ function bufferLineParticles(){
         vertexShader:   indicatorVertexShader,
         fragmentShader: indicatorFragmentShader,
 
-        blending: 		THREE.AdditiveBlending,
-        depthTest: 		true,
+        blending: 		THREE.NormalBlending,
+        depthTest: 		false,
         transparent:	true
 
     });

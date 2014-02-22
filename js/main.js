@@ -9,9 +9,9 @@ function init(){
 
     Explosion.attachToScene(engy.scene);
     Bullet.attachToScene(engy.scene);
-    indicator.attachToScene(engy.scene);
 //    Flame.attachToScene(engy.scene);
     shaderFlame.attachToScene(engy.scene);
+    indicator.attachToScene(engy.scene);
 
     var ship = new Ship(0, 0, 'ship', null);
 //    indicator.add(ship);
