@@ -22,25 +22,28 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
 
     // TODO implement damage, durability indication
     // TODO can compute the size of the indication box with boundingSphere
-    this.durability = (Math.random()*50>>0) + 20;
+    this.totalDurability = (Math.random()*50>>0) + 20;
+    this.durability = this.totalDurability;
 
     this.lastFrame = new Date();
     this.speedFactor = 0.01;
     this.rotationSpeedFactor = 1000;
     this.rotationAngle = this.currentSpeedY = this.currentSpeedX = this.rotationSpeed = 0;
-//    this.shipColor = (16777215 * Math.random() >> 0);
-//    this.shipColor = new THREE.Color();
-//    this.shipColor.setHSL(Math.random(),1,0.5);
+
+    this.weapon = 'bullet';
 
     this.pressedKeys = {};
+    this.attackTimer = 0;
+    this.attackRate = (Math.random()*150>>0) + 10;
 
     var self = this;
 
     switch (behavior) {
         // TODO implement filler-functions for every behaviour
         case 'ship':
+            this.weapon = 'base';
             this.speedFactor = 10;
-
+            this.attackRate = 10;
             this.applyBehavior = this.applyPressedKeys;
             this.bindEvents();
             this.colliderType = bitMapper.generateMask(['ship', 'player']);
@@ -56,11 +59,9 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
 //            this.bindEvents();
             break;
         case 'follow':
+            this.faction = 2;
 //            this.rotationAngle = Math.random()*6.28;
             // TODO implement pre-orientation function
-
-            this.attackTimer = 0;
-            this.attackRate = (Math.random()*150>>0) + 10;
 
 //            this.applyBehavior = this.followSimple;
 //            this.applyBehavior = this.followSimpleConstantSpeed;
@@ -70,14 +71,14 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
 
 
             // TODO add behaviours like : patrol, hold distance, free seek
-            this.speedFactor = 1; // followAggressive, followAggressiveConstantSpeed & followSimple
+            this.speedFactor = 0.5 + Math.random()/2; // followAggressive, followAggressiveConstantSpeed & followSimple
 //            this.speedFactor = 200; // followSimpleConstantSpeed
-//
+            this.rotationSpeedFactor = 15 + Math.random()*15;
             this.target = behaviorOptions || this;
             // TODO implement LOCATOR and target capture/loose
 
             this.colliderType = bitMapper.generateMask(['ship', 'bot']);
-            this.colliderAccept = bitMapper.generateMask(['ship', 'projectile']);
+            this.colliderAccept = bitMapper.generateMask(['player', 'projectile']);
             this.distance = 0;
             this.targetAngle = 0;
 //            this.prepareSimpleRandomShip();
@@ -224,7 +225,7 @@ Ship.prototype.followAggressive = function(delta) {
         // TODO implement speed limit
         this.currentSpeedX += deltaX;
         this.currentSpeedY += deltaY;
-        this.flame.fire(this, this.rotationAngle);
+//        this.flame.fireByParams(this.x, this.y, this.radius, this.rotationAngle,this.currentSpeedX,this.currentSpeedY);
         invertAngle = -1;
     }
 
@@ -246,14 +247,14 @@ Ship.prototype.followAggressive = function(delta) {
 };
 
 Ship.prototype.followAggressiveConstantSpeed = function(delta) {
-    this.flame.fire(this, this.rotationAngle);
+    this.flame.fireByParams('jet',this.x, this.y, this.radius, this.rotationAngle,0,0);
     this.distance = Math.sqrt(Math.pow(this.x - this.target.x,2) + Math.pow(this.y - this.target.y,2));
     this.targetAngle = Math.atan2((this.x - this.target.x)*Math.sin(this.rotationAngle) - Math.cos(this.rotationAngle)*(this.y - this.target.y), (this.x - this.target.x)* Math.cos(this.rotationAngle) + Math.sin(this.rotationAngle)*(this.y - this.target.y));
     this.currentSpeedX = Math.cos(this.rotationAngle)*delta/this.speedFactor;
     this.currentSpeedY = Math.sin(this.rotationAngle)*delta/this.speedFactor;
 
-    if (Math.abs(this.targetAngle) > 0.05){
-        this.rotationSpeed = this.targetAngle / (Math.abs(this.targetAngle)*20); // TODO use rotationSpeedFactor to adjust rotation speed
+    if (Math.abs(this.targetAngle) > 0.01){
+        this.rotationSpeed = this.targetAngle / (Math.abs(this.targetAngle + 0.0000001)*this.rotationSpeedFactor); // TODO use rotationSpeedFactor to adjust rotation speed
     } else {
         this.rotationSpeed = 0;
         this.rotationAngle -= this.targetAngle;
@@ -261,7 +262,7 @@ Ship.prototype.followAggressiveConstantSpeed = function(delta) {
 
 
 
-    this.attackTimer += delta;
+//    this.attackTimer += delta;
 
     if (this.attackTimer > this.attackRate){
         Bullet.fire(this, this.rotationAngle);
@@ -279,7 +280,7 @@ Ship.prototype.followSimple = function(delta) {
     if (Math.pow(this.currentSpeedX + deltaX, 2) + Math.pow(this.currentSpeedY + deltaY, 2) < 36){
         this.currentSpeedX += deltaX;
         this.currentSpeedY += deltaY;
-        this.flame.fire(this, this.rotationAngle);
+        this.flame.fireByParams('jet',this.x, this.y, this.radius, this.rotationAngle,this.currentSpeedX,this.currentSpeedY);
     }
     this.rotationAngle = this.targetAngle + Math.PI;
 
@@ -343,11 +344,11 @@ Ship.prototype.keydownEvents = {
     '87' : function(time){
         var deltaX = Math.cos(this.rotationAngle)*time/this.speedFactor,
             deltaY = Math.sin(this.rotationAngle)*time/this.speedFactor;
-        if (Math.pow(this.currentSpeedX + deltaX, 2) + Math.pow(this.currentSpeedY + deltaY, 2) < 36){
+//        if (Math.pow(this.currentSpeedX + deltaX, 2) + Math.pow(this.currentSpeedY + deltaY, 2) < 36){
             this.currentSpeedX = this.currentSpeedX + Math.cos(this.rotationAngle)*time/this.speedFactor;
             this.currentSpeedY = this.currentSpeedY + Math.sin(this.rotationAngle)*time/this.speedFactor;
-        }
-        this.flame.fire(this, this.rotationAngle);
+//        }
+        this.flame.fireByParams('jet',this.x, this.y, this.radius, this.rotationAngle,this.currentSpeedX,this.currentSpeedY);
     },
     '83' : function(time){
 //        this.currentSpeedX = this.currentSpeedX - Math.cos(this.rotationAngle)*time/this.speedFactor;
@@ -364,7 +365,12 @@ Ship.prototype.keydownEvents = {
     },
     '32' : function(){
 //        Explosion.detonate(this);
-        Bullet.fire(this, this.rotationAngle);
+
+        if (this.attackTimer > this.attackRate){
+            Bullet.fire(this, this.rotationAngle);
+            this.attackTimer = 0;
+        }
+
         //var b = new Bullet(this.collider, this.ctx, this.x + 20*Math.cos(this.rotationAngle), this.y + 20*Math.sin(this.rotationAngle), this.rotationAngle);
 //        b.rotationAngle = this.rotationAngle;
         this.pressedKeys['80'] = false;
@@ -411,6 +417,8 @@ Ship.prototype.action = function(time){
 
     this.x += this.currentSpeedX * time;
     this.y += this.currentSpeedY * time;
+
+    this.attackTimer += time;
 
     this.geometry.position.x = this.x;
     this.geometry.position.y = this.y;

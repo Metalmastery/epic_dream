@@ -107,8 +107,8 @@ var engy = (function(){
     }
 
     function setBackground(){
-//        var floorTexture = new THREE.ImageUtils.loadTexture( 'img/galaxy_starfield.png' );
-        var floorTexture = new THREE.ImageUtils.loadTexture( 'img/worley3.png' );
+        var floorTexture = new THREE.ImageUtils.loadTexture( 'img/noise_4.png' );
+//        var floorTexture = new THREE.ImageUtils.loadTexture( 'img/worley3.png' );
         floorTexture.repeat.set( 50,50 );
         floorTexture.wrapS =THREE.RepeatWrapping;
             floorTexture.wrapT = THREE.MirroredRepeatWrapping;
@@ -176,6 +176,10 @@ var engy = (function(){
         if ('geometry' in obj) {
             scene.add(obj.geometry);
         }
+
+        if ('durability' in obj) {
+            indicator.add(obj);
+        }
     }
 
     function removeFromMainLoop(obj){
@@ -196,6 +200,7 @@ var engy = (function(){
     function destroy(obj){
 //        console.log('destroy', obj);
         collider.remove(obj);
+        indicator.remove(obj);
         scene.remove(obj.geometry);
         removeFromMainLoop(obj);
     }
@@ -216,6 +221,7 @@ var engy = (function(){
 //            console.log(mainLoopObjects[i]);
             mainLoopObjects[i].update(params*gameSpeed);
         }
+        indicator.update();
         camera.position.x = watched.x;
         camera.position.y = watched.y;
     }

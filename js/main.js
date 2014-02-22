@@ -9,17 +9,19 @@ function init(){
 
     Explosion.attachToScene(engy.scene);
     Bullet.attachToScene(engy.scene);
-    Flame.attachToScene(engy.scene);
+    indicator.attachToScene(engy.scene);
+//    Flame.attachToScene(engy.scene);
     shaderFlame.attachToScene(engy.scene);
 
     var ship = new Ship(0, 0, 'ship', null);
+//    indicator.add(ship);
     engy.followCamera(ship);
     ship.start();
 
     engy.addToMainLoop(Bullet);
-    engy.addToMainLoop(Flame);
     engy.addToMainLoop(shaderFlame);
     engy.addToMainLoop(ship);
+//    engy.addToMainLoop(indicator);
     engy.collider.add(ship);
 
 //    ambient();
@@ -36,13 +38,13 @@ function init(){
         }
     });
 
-//    createEnemies(ship);
+    createEnemies(ship);
 }
 
 function createEnemies(ship){
     var a = 0,
 //        distance = Math.random() * 1000 + 300,
-        distance = 100,
+        distance = 500,
         amount = 10,
         dummy;
     for (a = 0; a < 6.28; a += 6.28/amount){
