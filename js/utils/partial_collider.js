@@ -15,8 +15,8 @@ var Collider = function(bounds, depth){
 
 
 
-//    window.cellWidth = normalizedBounds.width >> depth;
-//    window.cellWidth = normalizedBounds.height >> depth;
+    window.cellWidth = normalizedBounds.width >> depth;
+    window.cellHeight = normalizedBounds.height >> depth;
 
     var getId = (function(){
         var baseId = 0;

@@ -1,22 +1,25 @@
 
-var shaderFlame = new bufferParticles(Designer.colors.split[1]);
+var shaderFlame = new bufferParticles(Designer.colors.triad[2]);
 function bufferParticles(color){
 
     var mainScene,
-        projectileLifetime = 50,
-        projectileSpeed = 0.1,
+        projectileLifetime = 35,
+        projectileSpeed = 1,
         activeProjectiles = {},
         currentAnimationFrame = null,
         materials = [],
         geometry,
         particleSystem,
-        particleSize = 25,
-        amount = 12000,
+        particleSize = 16,
+        amount = 5000,
         nextIndex = 0;
 
-    var baseColor = color.clone().offsetHSL(0, 0, 0.2),
-        hsl = baseColor.getHSL();
-
+    var colors = {
+        'jet' : Designer.colors.triad[2],
+//        'base' : Designer.colors.triad[1],
+        'bullet' : Designer.colors.complementary,
+        'base' : Designer.colors.analog[0]
+    };
 
     var flameVertexShader = [
         'uniform float lifetime;' ,
@@ -63,7 +66,7 @@ function bufferParticles(color){
     var uniforms = {
 
         color:     { type: "c", value: new THREE.Color( 0xffffff ) },
-        texture:   { type: "t", value: THREE.ImageUtils.loadTexture( "img/particle.png" ) },
+        texture:   { type: "t", value: THREE.ImageUtils.loadTexture( "img/particles/spark_3.png" ) },
         lifetime : { type: "f", value: projectileLifetime }
 
 
@@ -95,7 +98,7 @@ function bufferParticles(color){
     geometry.addAttribute( 'time', Float32Array, amount, 1 );
 //    geometry.attributes.size.dynamic = true;
 //    geometry.attributes.position.dynamic = true;
-//    geometry.attributes.customColor.dynamic = true;
+    geometry.attributes.customColor.dynamic = true;
     geometry.attributes.time.dynamic = true;
 
     var values_size = geometry.attributes.size.array,
@@ -148,7 +151,7 @@ function bufferParticles(color){
             valuesTime[i] += time;
         }
         geometry.attributes.time.needsUpdate = true;
-//        geometry.attributes.position.needsUpdate = true;
+        geometry.attributes.customColor.needsUpdate = true;
     }
 
     function stop(){
@@ -157,7 +160,8 @@ function bufferParticles(color){
     }
 
     function fire(shooter){
-        var angle = shooter.rotationAngle
+        var angle = shooter.rotationAngle,
+            radius = shooter.radius || 0;
         angle += 3.07 + Math.random()*0.14;
         var vecPosition = nextIndex * 3;
         var cos = Math.cos(angle), sin = Math.sin(angle);
@@ -167,16 +171,16 @@ function bufferParticles(color){
 
             speedY = selfSpeedY + shooter.currentSpeedY,
 
-            positionY = shooter.geometry.position.y + sin * 7 + shooter.currentSpeedY,
-            positionX = shooter.geometry.position.x + cos * 7 + shooter.currentSpeedX;
+            positionY = shooter.geometry.position.y + sin * radius + shooter.currentSpeedY,
+            positionX = shooter.geometry.position.x + cos * radius + shooter.currentSpeedX;
 
 //        console.log(speedX, speedY);
 
-//        valuesVelocity[vecPosition] = speedX;
-//        valuesVelocity[vecPosition + 1] = speedY;
-
-        valuesVelocity[vecPosition] = selfSpeedX;
-        valuesVelocity[vecPosition + 1] = selfSpeedY;
+        valuesVelocity[vecPosition] = speedX;
+        valuesVelocity[vecPosition + 1] = speedY;
+//
+//        valuesVelocity[vecPosition] = selfSpeedX;
+//        valuesVelocity[vecPosition + 1] = selfSpeedY;
 
         positions[vecPosition] = positionX;
         positions[vecPosition + 1] = positionY;
@@ -193,9 +197,47 @@ function bufferParticles(color){
         }
     }
 
+    function fireByParams(type, x, y, shipRadius, angle, vX, vY){
+        var radius = shipRadius || 0,
+            angle = angle + 3.07 + Math.random()*0.14,
+//            angle = angle + 3.14,
+            vecPosition = nextIndex * 3,
+            type = type || 'jet',
+            col = colors[type];
+        var cos = Math.cos(angle), sin = Math.sin(angle);
+        var selfSpeedX = cos*projectileSpeed + vX,
+            selfSpeedY = sin*projectileSpeed + vY,
+
+            positionY = y + sin * radius + vY,
+            positionX = x + cos * radius + vX;
+
+        valuesVelocity[vecPosition] = selfSpeedX;
+        valuesVelocity[vecPosition + 1] = selfSpeedY;
+
+        values_color[vecPosition] = col.r;
+        values_color[vecPosition + 1] = col.g;
+        values_color[vecPosition + 2] = col.b;
+
+        positions[vecPosition] = positionX;
+        positions[vecPosition + 1] = positionY;
+
+        valuesTime[nextIndex] = 0;
+
+        geometry.attributes.velocity.needsUpdate = true;
+        geometry.attributes.position.needsUpdate = true;
+
+        if (nextIndex >= amount) {
+            nextIndex = 0;
+        } else {
+            nextIndex++;
+        }
+    }
+
+
     createSystem();
 
     this.fire = fire;
+    this.fireByParams = fireByParams;
     this.attachToScene = attachToScene;
     this.stop = stop;
     this.update = update;

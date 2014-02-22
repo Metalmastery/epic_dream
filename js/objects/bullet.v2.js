@@ -12,7 +12,7 @@ function particles(){
         materials = [],
         geometry,
         particleSystem,
-        amount = 500,
+        amount = 1500,
         resizeAddition = 100;
 
     /* object pool here */
@@ -65,7 +65,7 @@ function particles(){
                 console.log('! set released as free');
                 setReleasedAsFree();
             } else {
-//                console.log('! extend pool');
+                console.log('! extend pool');
 //                addPoolItem(pool.length);
             }
         }
@@ -136,12 +136,7 @@ function particles(){
             if (currentProjectile.lifetime>0 && !currentProjectile.position.collide) {
                 currentProjectile.position.x += currentProjectile.speedX * time;
                 currentProjectile.position.y += currentProjectile.speedY * time;
-                shaderFlame.fire({
-                    currentSpeedX : 0,
-                    currentSpeedY : 0,
-                    rotationAngle : currentProjectile.position.source.rotationAngle,
-                    geometry : currentProjectile
-                });
+                shaderFlame.fireByParams(currentProjectile.position.source.weapon ,currentProjectile.position.x, currentProjectile.position.y, 0, currentProjectile.lifetime >> 0,0,0);
             } else {
                 if (activeProjectiles[i]) {
                     releaseObject(currentProjectile);
