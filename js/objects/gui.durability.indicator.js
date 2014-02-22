@@ -55,6 +55,8 @@ function bufferLineParticles(){
 
     };
 
+    uniforms.texture.value.flipY = false;
+
     var shaderMaterial = new THREE.ShaderMaterial( {
 
         uniforms: 		uniforms,
@@ -114,10 +116,10 @@ function bufferLineParticles(){
             vecPosition = i*3;
 
             positions[ vecPosition + 0 ] = objects[i].x;
-            positions[ vecPosition + 1 ] = objects[i].y + objects[i].radius*2;
-            positions[ vecPosition + 2 ] = 10;
+            positions[ vecPosition + 1 ] = objects[i].y + objects[i].radius;
+            positions[ vecPosition + 2 ] = 0;
 
-            values_params[ vecPosition + 0 ] = objects[i].radius * 2;
+            values_params[ vecPosition + 0 ] = objects[i].indicatorSize;
             values_params[ vecPosition + 1 ] = objects[i].totalDurability;
             values_params[ vecPosition + 2 ] = objects[i].durability;
 
