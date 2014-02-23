@@ -16,6 +16,7 @@ function bufferParticles(color){
 
     var colors = {
         'jet' : Designer.colors.triad[2],
+        'jet2' : Designer.colors.split[1],
 //        'base' : Designer.colors.triad[1],
         'bullet' : Designer.colors.complementary,
         'base' : Designer.colors.analog[0]
@@ -50,6 +51,7 @@ function bufferParticles(color){
             '//gl_FragColor = vec4( color * vColor, alpha/2.0 );' ,
             'vec3 col = vColor;' ,
             'gl_FragColor = vec4( col + vec3(a3, a3, a3), a2 );' ,
+            '//gl_FragColor = vec4( col + vec3(alpha/2.0, alpha/2.0, alpha/2.0), a2 );' ,
             'gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord ); ' ,
         '}'].join('\n');
 
@@ -217,6 +219,10 @@ function bufferParticles(color){
         values_color[vecPosition] = col.r;
         values_color[vecPosition + 1] = col.g;
         values_color[vecPosition + 2] = col.b;
+
+//        values_color[vecPosition] = Math.random();
+//        values_color[vecPosition + 1] = Math.random();
+//        values_color[vecPosition + 2] = Math.random();
 
         positions[vecPosition] = positionX;
         positions[vecPosition + 1] = positionY;

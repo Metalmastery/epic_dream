@@ -67,7 +67,7 @@ var engy = (function(){
         scene.add(directionalLight);
 
         camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1, 10000 );
-        camera.position.set(0, 0, 600);
+        camera.position.set(0, 0, 1200);
         scene.add(camera);
         setBackground();
         // TODO implement parallax background
@@ -79,7 +79,7 @@ var engy = (function(){
         var a = Math.random() * Math.PI * 2,
 //            distance = Math.random() * 100 + 300,
             distance = 300,
-            dummy = new Ship(distance * Math.cos(a), distance * Math.sin(a), 'follow', ship);
+            dummy = new Ship(distance * Math.cos(a), distance * Math.sin(a), 'follow2', ship);
             dummy.start();
             collider.add(dummy);
             addToMainLoop(dummy);
