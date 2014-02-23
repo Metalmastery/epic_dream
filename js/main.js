@@ -39,14 +39,32 @@ function init(){
     });
 
 //    createEnemies(ship);
-//    createTwoFaction(ship);
+    createTwoFaction(ship);
+//    createFleet(ship);
+}
+
+function createFleet(ship){
+
+    var fleet = new Fleet(500,500,ship);
+
+    for (var i = 0; i < 3; i++) {
+        var dummy = new Ship(fleet.x + Math.random()*200, fleet.x + Math.random()*200, 'follow', ship);
+        dummy.start();
+        fleet.add(dummy);
+        engy.collider.add(dummy);
+        engy.addToMainLoop(dummy);
+
+    }
+
+    engy.addToMainLoop(fleet);
+
 }
 
 function createEnemies(ship){
     var a = 0,
 //        distance = Math.random() * 1000 + 300,
         distance = 500,
-        amount = 10,
+        amount = 100,
         dummy;
     for (a = 0; a < 6.28; a += 6.28/amount){
 //        distance = 200 + Math.cos(a*3) * 100;
@@ -59,14 +77,14 @@ function createEnemies(ship){
 
 function createTwoFaction(ship){
     var a = 0,
-        distance = 500,
-        amount = 10,
+        distance = 300,
+        amount = 1,
         dummy1,
         dummy2;
-    for (a = 0; a < amount; a ++){
+    for (a = 0; a < 3.14; a += 3.14 / amount){
 
-        dummy1 = new Ship((a % 1 ==0 ? 1 : -1) * distance, -amount*50 + a*100, 'follow', ship);
-        dummy2 = new Ship((a % 1 ==0 ? -1 : 1) * distance, -amount*50 + a*100, 'follow', ship);
+        dummy1 = new Ship(Math.cos(a) * distance/2, Math.sin(a) * distance/2, 'follow2', ship);
+        dummy2 = new Ship(Math.cos(a+3.14) * distance, Math.sin(a+3.14) * distance, 'follow', ship);
         dummy1.target = dummy2;
         dummy2.target = dummy1;
         dummy1.start();
