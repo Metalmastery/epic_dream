@@ -126,7 +126,8 @@ function particles(){
     }
 
     function update(time){
-        var currentProjectile;
+        var currentProjectile,
+            tmp;
         for (var i in activeProjectiles){
             currentProjectile = pool[activeProjectiles[i]];
             currentProjectile.lifetime-=time;
@@ -134,9 +135,14 @@ function particles(){
                 currentProjectile.position.collide = null;
             }
             if (currentProjectile.lifetime>0 && !currentProjectile.position.collide) {
-                currentProjectile.position.x += currentProjectile.speedX * time;
-                currentProjectile.position.y += currentProjectile.speedY * time;
-                shaderFlame.fireByParams(currentProjectile.position.source.weapon ,currentProjectile.position.x, currentProjectile.position.y, 0, currentProjectile.lifetime >> 0,0,0);
+                currentProjectile.position.x += currentProjectile.speedX * time;// + Math.sin(currentProjectile.lifetime)*3;
+                currentProjectile.position.y += currentProjectile.speedY * time;// + Math.cos(currentProjectile.lifetime)*3;
+
+
+//                shaderFlame.fireByParams(currentProjectile.position.source.weapon ,currentProjectile.position.x, currentProjectile.position.y, 0, currentProjectile.lifetime >> 0,0,0);
+                shaderFlame.fireByParams(currentProjectile.position.source.weapon ,currentProjectile.position.x, currentProjectile.position.y, 0, currentProjectile.position.source.rotationAngle,0,0);
+//                shaderFlame.fireByParams(currentProjectile.position.source.weapon ,currentProjectile.position.x, currentProjectile.position.y, 0, currentProjectile.position.source.rotationAngle + 0.5,0,0);
+//                shaderFlame.fireByParams(currentProjectile.position.source.weapon ,currentProjectile.position.x, currentProjectile.position.y, 0, currentProjectile.position.source.rotationAngle - 0.5,0,0);
             } else {
                 if (activeProjectiles[i]) {
                     releaseObject(currentProjectile);

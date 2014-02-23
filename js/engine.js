@@ -77,7 +77,8 @@ var engy = (function(){
 
     function createEnemy(ship){
         var a = Math.random() * Math.PI * 2,
-            distance = Math.random() * 1000 + 300,
+//            distance = Math.random() * 100 + 300,
+            distance = 300,
             dummy = new Ship(distance * Math.cos(a), distance * Math.sin(a), 'follow', ship);
             dummy.start();
             collider.add(dummy);

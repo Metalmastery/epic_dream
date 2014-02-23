@@ -38,7 +38,8 @@ function init(){
         }
     });
 
-    createEnemies(ship);
+//    createEnemies(ship);
+//    createTwoFaction(ship);
 }
 
 function createEnemies(ship){
@@ -53,6 +54,27 @@ function createEnemies(ship){
         dummy.start();
         engy.collider.add(dummy);
         engy.addToMainLoop(dummy);
+    }
+}
+
+function createTwoFaction(ship){
+    var a = 0,
+        distance = 500,
+        amount = 10,
+        dummy1,
+        dummy2;
+    for (a = 0; a < amount; a ++){
+
+        dummy1 = new Ship((a % 1 ==0 ? 1 : -1) * distance, -amount*50 + a*100, 'follow', ship);
+        dummy2 = new Ship((a % 1 ==0 ? -1 : 1) * distance, -amount*50 + a*100, 'follow', ship);
+        dummy1.target = dummy2;
+        dummy2.target = dummy1;
+        dummy1.start();
+        dummy2.start();
+        engy.collider.add(dummy1);
+        engy.addToMainLoop(dummy1);
+        engy.collider.add(dummy2);
+        engy.addToMainLoop(dummy2);
     }
 }
 
