@@ -2,12 +2,15 @@ var Explosion = (function(){
     var pool = [],
         position = 0,
         poolSize = 100,
+        audio = new Audio(),
         explosionSize = 50,
         pi2 = Math.PI * 2,
         mainScene = null,
         baseColor = 0xcc9944,
 //        baseColor = 0xff6644,
         particleSize = 110;
+
+    audio.src = 'sound/explosion_1.wav';
 
     for (var i = 0; i < poolSize; i++) {
         var particles = new THREE.Geometry(),
@@ -52,6 +55,8 @@ var Explosion = (function(){
     function run(scene){
         var item = pool[position], length = 10;
         scene.add(item);
+        audio.currentTime = 0;
+        audio.play();
         function callback(){
             item.material.opacity -= 0.05;
             if (item.material.opacity > 0) {

@@ -18,6 +18,10 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
     this.x = startX ? startX : 0;
     this.y = startY ? startY : 0;
 
+    this.audio = new Audio();
+    this.audio.src = 'sound/laser_' + (1 + Math.random()*4 + 0.5>> 0) + '.wav';
+    this.audio.volume = 0.5;
+
     this.flame = shaderFlame;
 
     this.active = Math.random() > 0.5;
@@ -277,6 +281,7 @@ Ship.prototype.followTest = function(delta) {
 //
     if (this.attackTimer > this.attackRate && Math.abs(shootAngle) < 0.1 && this.distance < 500 && this.attackMode){
         Bullet.fire(this, this.rotationAngle);
+        this.audio.play();
         this.attackTimer = 0;
     }
 
@@ -379,6 +384,7 @@ Ship.prototype.followAggressiveConstantSpeed = function(delta) {
 
     if (this.attackTimer > this.attackRate && this.attackMode){
         Bullet.fire(this, this.rotationAngle);
+        this.audio.play();
         this.attackTimer = 0;
     }
 
@@ -481,6 +487,8 @@ Ship.prototype.keydownEvents = {
 
         if (this.attackTimer > this.attackRate){
             Bullet.fire(this, this.rotationAngle);
+            this.audio.currentTime = 0;
+            this.audio.play();
             this.attackTimer = 0;
         }
 

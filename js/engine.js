@@ -4,6 +4,7 @@ var engy = (function(){
         counter = 0,
         scene,
         camera,
+        audio,
         collider,
         renderer,
         watched = {x : 0, y : 0},
@@ -73,6 +74,15 @@ var engy = (function(){
         // TODO implement parallax background
 //        setBackground();
 //        gridHelper();
+        initAudio();
+    }
+
+    function initAudio(){
+        audio = new Audio();
+        audio.src = 'sound/music/rez_kenet_-_unreeeal_superhero_3.mp3';
+        audio.play();
+        audio.loop = true;
+        window.au = audio;
     }
 
     function createEnemy(ship){
