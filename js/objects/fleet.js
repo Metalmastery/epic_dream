@@ -4,11 +4,22 @@ function Fleet(){
 }
 
 Fleet.prototype.init = function(x, y, target){
-    this.members = [];
+    this.members = {};
+    this.membersWithTarget = [];
+    this.membersWithoutTarget = [];
 
-    this.target = target || null;
+    this.targets = [];
+    if (target) {
+        this.targets.push(target);
+    }
+
+    this.commander = null;
+
     this.targetDistance = 0;
     this.targetAngle = 0;
+
+    this.centerX = 0;
+    this.centerY = 0;
 
     this.x = x || 0;
     this.y = y || 0;
@@ -19,10 +30,8 @@ Fleet.prototype.init = function(x, y, target){
 
 };
 
-Fleet.prototype.add = function(ship){
-    //add ship to fleet
-    this.members.push(ship);
-    ship.fleet = this;
+Fleet.prototype.updatePosition = function(ship){
+    //TODO ship can add own target to fleet targets list
 };
 
 Fleet.prototype.reportTarget = function(ship){
@@ -35,6 +44,12 @@ Fleet.prototype.requestTarget = function(ship){
 
 Fleet.prototype.requestAssistance = function(ship){
     //TODO ship can ask for assistance if his own enemy too strong
+};
+
+Fleet.prototype.add = function(ship){
+    //add ship to fleet
+    this.members.push(ship);
+    ship.fleet = this;
 };
 
 Fleet.prototype.remove = function(ship){
