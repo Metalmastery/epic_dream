@@ -10,7 +10,7 @@ function bufferParticles(color){
         materials = [],
         geometry,
         particleSystem,
-        particleSize = 16,
+        particleSize = 32,
         amount = 5000,
         nextIndex = 0;
 
@@ -24,6 +24,7 @@ function bufferParticles(color){
 
     var flameVertexShader = [
         'uniform float lifetime;' ,
+        'uniform float scale;' ,
         'attribute float size;' ,
         'attribute vec3 customColor;' ,
         'attribute vec3 velocity;' ,
@@ -34,7 +35,7 @@ function bufferParticles(color){
             'alpha = (lifetime-time) / lifetime;',
             'vColor = customColor;' ,
             'vec4 mvPosition = modelViewMatrix * vec4( position + velocity*time, 1.0 );' ,
-            'gl_PointSize = size/2.0  + size / 2.0 * alpha;' ,
+            'gl_PointSize = (size / 2.0  + size / 2.0 * alpha) * (scale / length(mvPosition.xyz));' ,
             '//gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );' ,
             'gl_Position = projectionMatrix * mvPosition; ',
         '}'].join('\n');
@@ -69,8 +70,8 @@ function bufferParticles(color){
 
         color:     { type: "c", value: new THREE.Color( 0xffffff ) },
         texture:   { type: "t", value: THREE.ImageUtils.loadTexture( "img/particles/spark_3.png" ) },
-        lifetime : { type: "f", value: projectileLifetime }
-
+        lifetime : { type: "f", value: projectileLifetime },
+        scale : { type: "f", value: engy.renderer.domElement.height/2 }
 
     };
 
@@ -86,6 +87,8 @@ function bufferParticles(color){
         transparent:	true
 
     });
+
+    console.log(shaderMaterial);
 
     materials.push(shaderMaterial);
 
