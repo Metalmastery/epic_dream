@@ -21,6 +21,8 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
     this.audio = new Audio();
     this.audio.src = 'sound/laser_' + (1 + Math.random()*4 + 0.5>> 0) + '.wav';
     this.audio.volume = 0.5;
+    //TODO single audio machine
+    //TODO channel registration for every member
 
     this.flame = shaderFlame;
 

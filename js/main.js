@@ -1,9 +1,12 @@
 var scene, renderer,
     camera;
 
-if ( !init() ){
-    animate();
-}
+    if ( !init() ){
+        animate();
+    }
+
+
+
 
 function init(){
 
@@ -39,7 +42,7 @@ function init(){
     });
 
 //    createEnemies(ship);
-    createTwoFaction(ship);
+//    createTwoFaction(ship);
 //    createFleet(ship);
 }
 
@@ -149,6 +152,9 @@ function animate() {
     var logic = function(){
         currentFtame = new Date();
         delta = (currentFtame - lastFrame) / 16;
+//        if (delta > 2) {
+//            delta = 2;
+//        }
         engy.update(delta);
         engy.collider.testCollisions();
         lastFrame = currentFtame;

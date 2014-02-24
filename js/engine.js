@@ -45,14 +45,21 @@ var engy = (function(){
 
         renderer = new THREE.WebGLRenderer({
             antialias: true,
-//        preserveDrawingBuffer: true,
-            alpha : true
+            preserveDrawingBuffer: true,
+            alpha : true,
+            precision: 'lowp'
+//            devicePixelRation : 1
         });
         renderer.setClearColor(0, 1);
 
+//        renderer.setScissor( 0, 0, 100, 100 ) ;
+//        renderer.enableScissorTest(true);
+
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setFaceCulling('front', 'cw');
+//        renderer.setFaceCulling('front', 'cw');
         document.getElementById('container').appendChild(renderer.domElement);
+
+        console.log(renderer);
 
         scene = new THREE.Scene();
         scene.fog = new THREE.Fog(0x0, 1000, 5500);
@@ -152,7 +159,7 @@ var engy = (function(){
         var floor = new THREE.Mesh(floorGeometry, floorMaterial2);
         floor.position.z = -1600;
         floor.rotation.z = -2;
-        scene.add(floor);
+//        scene.add(floor);
 
         window.floor = floor;
 

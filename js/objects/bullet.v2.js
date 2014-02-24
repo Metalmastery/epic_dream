@@ -89,6 +89,7 @@ function particles(){
         ),
         blending: THREE.AdditiveBlending,
         depthWrite : false,
+        depthTest : false,
         transparent: true
     }));
 
@@ -122,7 +123,7 @@ function particles(){
 
     function attachToScene(scene){
         mainScene = scene;
-        mainScene.add(particleSystem);
+//        mainScene.add(particleSystem);
     }
 
     function update(time){
@@ -139,9 +140,9 @@ function particles(){
                 currentProjectile.position.y += currentProjectile.speedY * time;// + Math.cos(currentProjectile.lifetime)*3;
 
 //                shaderFlame.fireByParams(currentProjectile.position.source.weapon ,currentProjectile.position.x, currentProjectile.position.y, 0, currentProjectile.lifetime >> 0,0,0);
-                shaderFlame.fireByParams(currentProjectile.position.source.weapon ,currentProjectile.position.x, currentProjectile.position.y, 0, currentProjectile.position.source.rotationAngle,0,0);
-//                shaderFlame.fireByParams(currentProjectile.position.source.weapon ,currentProjectile.position.x, currentProjectile.position.y, 0, currentProjectile.position.source.rotationAngle + 0.5,0,0);
-//                shaderFlame.fireByParams(currentProjectile.position.source.weapon ,currentProjectile.position.x, currentProjectile.position.y, 0, currentProjectile.position.source.rotationAngle - 0.5,0,0);
+//                shaderFlame.fireByParams(currentProjectile.position.source.weapon ,currentProjectile.position.x, currentProjectile.position.y, 0, currentProjectile.position.source.rotationAngle,0,0);
+                shaderFlame.fireByParams(currentProjectile.position.source.weapon ,currentProjectile.position.x, currentProjectile.position.y, 0, currentProjectile.position.source.rotationAngle + 0.5,0,0);
+                shaderFlame.fireByParams(currentProjectile.position.source.weapon ,currentProjectile.position.x, currentProjectile.position.y, 0, currentProjectile.position.source.rotationAngle - 0.5,0,0);
             } else {
                 if (activeProjectiles[i]) {
                     releaseObject(currentProjectile);
