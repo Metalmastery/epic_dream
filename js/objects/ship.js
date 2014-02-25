@@ -32,6 +32,10 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
     this.attackMode = true;
     this.avoidMode = true;
 
+    this.uniq = engy.collider.getId();
+
+    this.alive = true;
+
     // TODO GLOBAL CONTROLS FOR SHIP
     this.engineEnabled = false;
     this.rotationEnabled = true;
@@ -40,11 +44,13 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
 
     // TODO implement damage, durability indication
     // TODO can compute the size of the indication box with boundingSphere
-    this.totalDurability = (Math.random()*10>>0) + 20;
+    this.totalDurability = (Math.random()*1000>>0) + 20;
     this.durability = this.totalDurability;
     this.indicatorSize = 25;
 
     this.radius = 7;
+
+    this.target = null;
 
     this.lastFrame = new Date();
     this.speedFactor = 0.01;
@@ -84,6 +90,7 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
             this.faction = 2;
             this.rotationAngle = Math.random()*6.28;
             // TODO implement pre-orientation function
+            this.durability = this.totalDurability = 3;
 
 //            this.applyBehavior = this.followSimple;
 //            this.applyBehavior = this.followSimpleConstantSpeed;
@@ -97,11 +104,11 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
             this.speedFactor = 90 //+ Math.random()*30; // followAggressive, followAggressiveConstantSpeed & followSimple
 //            this.speedFactor = 200; // followSimpleConstantSpeed
             this.rotationSpeedFactor = 15 + Math.random()*15;
-            this.target = behaviorOptions || this;
+            this.target = behaviorOptions || null;
             // TODO implement LOCATOR and target capture/loose
 
             this.colliderType = bitMapper.generateMask(['ship', 'bot']);
-            this.colliderAccept = bitMapper.generateMask(['player', 'projectile']);
+            this.colliderAccept = bitMapper.generateMask(['ship', 'projectile']);
             this.distance = 0;
             this.targetAngle = 0;
 //            this.prepareSimpleRandomShip();
@@ -167,11 +174,28 @@ Ship.prototype.start = function(){
             if (self.running) {
                 if (self.collide && self.collide.source != self){
                     // TODO implements collision checking and reactions
-                    self.durability--;
 
-                    if (bitMapper.is('ship', self.collide)) {
-                        self.stop();
+//                    if (bitMapper.is('ship', self.collide) && self.collide.fleet.uniq != self.fleet.uniq) {
+//                        self.stop();
+//                    }
+
+                    if (bitMapper.is('projectile', self.collide) && self.collide.source.fleet.uniq != self.fleet.uniq) {
+                        self.durability--;
+                        if (!self.collide.source.target){
+                            self.collide.source.fleet.reportTarget(self.collide.source, self);
+                        }
+//                        console.info('UNDER ATTACK', self.collide.source);
+                        if (!self.target) {
+                            self.fleet.reportTarget(self, self.collide.source);
+                        }
                     }
+//                    console.info(self.collide.fleet.uniq, self.fleet.uniq);
+//
+//                    if (!this.target && self.collide.source && self.collide.source.fleet && ) {
+//
+//                    }
+
+
 //                    if (window.ship == self) console.log(self.durability);
                     self.collide = false;
                 }
@@ -194,6 +218,7 @@ Ship.prototype.stop = function(){
     if (this.fleet) {
         this.fleet.remove(this);
     }
+    this.alive = false;
     this.collide = false;
     engy.destroy(this);
     Explosion.detonate(this);
@@ -223,6 +248,17 @@ Ship.prototype.avoid = function(delta){
 Ship.prototype.followTest = function(delta) {
     if (!this.active) {
         this.active = !this.active;
+        return false;
+    }
+
+    if (!this.target) {
+        return false;
+    }
+
+    if (!this.target.alive) {
+//        console.error('TARGET DESTROYED');
+        this.fleet.reportTargetDestroyed(this, this.target);
+        this.target = null;
         return false;
     }
 
@@ -268,7 +304,7 @@ Ship.prototype.followTest = function(delta) {
         this.currentSpeedX += cos*delta/factor;
         this.currentSpeedY += sin*delta/factor;
 
-        this.flame.fireByParams('jet',this.x, this.y, this.radius, this.rotationAngle,this.currentSpeedX,this.currentSpeedY);
+        this.flame.fireByParams('jet2',this.x, this.y, this.radius, this.rotationAngle,this.currentSpeedX,this.currentSpeedY);
     }
 
     if (Math.abs(this.targetAngle) > 0.05){

@@ -4,19 +4,27 @@ function Fleet(){
 }
 
 Fleet.prototype.init = function(x, y, target){
-    this.members = {};
+    this.uniq = engy.collider.getId();
+
+    this.members = [];
     this.membersWithTarget = [];
     this.membersWithoutTarget = [];
 
+    // flags
+    this.targetAdded = false;
+    this.targetDestroyed = false;
+    this.memberAdded = false;
+    this.memberDestroyed = false;
+
+    this.targetFleet = null;
     this.targets = [];
     if (target) {
-        this.targets.push(target);
+        this.setTargetFleet(target);
     }
 
-    this.commander = null;
+//    this.newTargets = [];
 
-    this.targetDistance = 0;
-    this.targetAngle = 0;
+//    this.commander = null;
 
     this.centerX = 0;
     this.centerY = 0;
@@ -28,28 +36,84 @@ Fleet.prototype.init = function(x, y, target){
         attackDistance : 400
     };
 
+    console.log(this.uniq, 'FLEET CREATED');
+
+};
+
+Fleet.prototype.setTargetFleet = function(fleet){
+    this.targetFleet = fleet;
+    this.targets = fleet.members;
 };
 
 Fleet.prototype.updatePosition = function(ship){
     //TODO ship can add own target to fleet targets list
 };
 
-Fleet.prototype.reportTarget = function(ship){
+Fleet.prototype.reportTarget = function(reporter, target){
     //TODO ship can add own target to fleet targets list
+    reporter.target = target;
+    if (this.targets.indexOf(target) < 0 && !this.targetFleet) {
+        this.changeTargetExistanceState(reporter, true);
+        this.setTargetFleet(target.fleet);
+        console.log(this.uniq, 'TARGET REPORTED');
+    }
+};
+
+Fleet.prototype.reportTargetDestroyed = function(reporter, target){
+    this.changeTargetExistanceState(reporter, false);
+    var index = this.targets.indexOf(target);
+    console.log('REPORT DESTROYED', this.targets.length);
+    if (index >= 0){
+        this.targets.splice(index, 1);
+        console.log(this.targets.length);
+        this.targetDestroyed = true;
+    }
+    if (this.targets.length == 0 && this.targetFleet){
+        console.info('FLEET DESTROYED');
+        this.targetFleet = null;
+        this.targets.push(window.ship);
+    }
 };
 
 Fleet.prototype.requestTarget = function(ship){
     //TODO ship can request target if own target destroyed or not exists
+    this.changeTargetExistanceState(ship, false);
 };
 
 Fleet.prototype.requestAssistance = function(ship){
     //TODO ship can ask for assistance if his own enemy too strong
+    if (this.members.length > 2) {
+        this.members[this.members.length * Math.random() >> 0].target = ship;
+    }
+};
+
+Fleet.prototype.changeTargetExistanceState = function(ship, state){
+    var groupFrom = state ? this.membersWithoutTarget : this.membersWithTarget;
+    var groupTo = state ? this.membersWithTarget : this.membersWithoutTarget;
+    //remove ship
+    var position = groupFrom.indexOf(ship),
+        member;
+    if (position >= 0){
+        if (position == groupFrom.length-1){
+            member = groupFrom.pop();
+        } else {
+            member = groupFrom[position] = groupFrom.pop();
+        }
+        groupTo.push(member);
+    }
 };
 
 Fleet.prototype.add = function(ship){
     //add ship to fleet
     this.members.push(ship);
     ship.fleet = this;
+    if (ship.target) {
+        this.membersWithTarget.push(ship);
+        this.reportTarget(ship.target);
+    } else {
+        this.membersWithoutTarget.push(ship);
+    }
+    console.log(this.uniq, 'FLEET MEMBER ADDED, TOTAL - ', this.members.length);
 };
 
 Fleet.prototype.remove = function(ship){
@@ -66,43 +130,18 @@ Fleet.prototype.remove = function(ship){
 
 Fleet.prototype.update = function(){
     //cycle through all members
-    if (!this.target) {
-        return false;
+    var freeMember,
+        targetIndex = 0;
+
+    for (var i = 0; i < this.membersWithoutTarget.length; i++) {
+        freeMember = this.membersWithoutTarget[i];
+        freeMember.target = this.targets[targetIndex];
+        targetIndex ++;
+        if (targetIndex >= this.targets.length){
+            targetIndex = 0;
+        }
+
+
     }
 
-    var distX = this.target.x - this.x,
-        distY = this.target.y - this.y,
-        member;
-
-
-    this.targetDistance = Math.sqrt(Math.pow(distX,2) + Math.pow(distY,2));
-    this.targetAngle = Math.atan2(distY, distX);
-
-    window.fl = [this.x, this.y, this.targetAngle].join(' ') ;
-
-    this.x = 100 * Math.cos(this.targetAngle) + this.members[0].x;
-    this.y = 100 * Math.sin(this.targetAngle) + this.members[0].y;
-
-    if (this.targetDistance < this.const.attackDistance) {
-        for (var i = 0; i < this.members.length; i++) {
-            member = this.members[i];
-            member.target = this.target;
-            member.attackMode = true;
-            member.avoidMode = true;
-        }
-    } else {
-        for (var i = 1; i < this.members.length; i++) {
-            member = this.members[i];
-            member.attackMode = false;
-            member.avoidMode = false;
-            member.target = {
-                x : this.x + Math.cos(i) * ( i / 3 >> 0 ) * 50,
-                y : this.y + Math.sin(i) * ( i / 3 >> 0) * 50,
-                currentSpeedX : 0,
-                currentSpeedY : 0
-            }
-
-        }
-    }
-    shaderFlame.fireByParams('bullet',this.x, this.y, 0, 0, 0, 0);
 };

@@ -43,15 +43,19 @@ function init(){
 
 //    createEnemies(ship);
 //    createTwoFaction(ship);
-//    createFleet(ship);
+    createFleet(ship);
 }
 
 function createFleet(ship){
 
-    var fleet = new Fleet(500,500,ship);
+    var fleet = new Fleet(300,300,null),
+        playerFleet = new Fleet(0,0,null),
+        dist = 500,
+        amount1 = 5,
+        amount2 = 4;
 
-    for (var i = 0; i < 3; i++) {
-        var dummy = new Ship(fleet.x + Math.random()*200, fleet.x + Math.random()*200, 'follow', ship);
+    for (var i = 0; i < amount1; i++) {
+        var dummy = new Ship(fleet.x + Math.random()*dist, fleet.x + Math.random()*dist, 'follow', null);
         dummy.start();
         fleet.add(dummy);
         engy.collider.add(dummy);
@@ -59,7 +63,20 @@ function createFleet(ship){
 
     }
 
+    for (var i = 0; i < amount2; i++) {
+        var helper = new Ship(-Math.random()*dist, -Math.random()*dist, 'follow', null);
+        helper.durability = helper.totalDurability = 4;
+        helper.start();
+        playerFleet.add(helper);
+        engy.collider.add(helper);
+        engy.addToMainLoop(helper);
+
+    }
+
+    playerFleet.add(ship);
+
     engy.addToMainLoop(fleet);
+    engy.addToMainLoop(playerFleet);
 
 }
 
