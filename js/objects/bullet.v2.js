@@ -12,7 +12,7 @@ function particles(){
         materials = [],
         geometry,
         particleSystem,
-        amount = 1500,
+        amount = 500,
         resizeAddition = 100;
 
     /* object pool here */
@@ -105,7 +105,7 @@ function particles(){
                 z : 0,
                 radius : 5,
                 source : null,
-                colliderAccept : bitMapper.generateMask(['ship', 'bot']),
+                colliderAccept : bitMapper.generateMask('ship'),
                 colliderType : bitMapper.generateMask('projectile')
             });
         }
@@ -140,9 +140,9 @@ function particles(){
                 currentProjectile.position.y += currentProjectile.speedY * time;// + Math.cos(currentProjectile.lifetime)*3;
 
 //                shaderFlame.fireByParams(currentProjectile.position.source.weapon ,currentProjectile.position.x, currentProjectile.position.y, 0, currentProjectile.lifetime >> 0,0,0);
-//                shaderFlame.fireByParams(currentProjectile.position.source.weapon ,currentProjectile.position.x, currentProjectile.position.y, 0, currentProjectile.position.source.rotationAngle,0,0);
-                shaderFlame.fireByParams(currentProjectile.position.source.weapon ,currentProjectile.position.x, currentProjectile.position.y, 0, currentProjectile.position.source.rotationAngle + 0.5,0,0);
-                shaderFlame.fireByParams(currentProjectile.position.source.weapon ,currentProjectile.position.x, currentProjectile.position.y, 0, currentProjectile.position.source.rotationAngle - 0.5,0,0);
+                shaderFlame.fireByParams(currentProjectile.position.source.weapon ,currentProjectile.position.x, currentProjectile.position.y, 0, currentProjectile.position.source.rotationAngle,0,0);
+//                shaderFlame.fireByParams(currentProjectile.position.source.weapon ,currentProjectile.position.x, currentProjectile.position.y, 0, currentProjectile.position.source.rotationAngle + 0.5,0,0);
+//                shaderFlame.fireByParams(currentProjectile.position.source.weapon ,currentProjectile.position.x, currentProjectile.position.y, 0, currentProjectile.position.source.rotationAngle - 0.5,0,0);
             } else {
                 if (activeProjectiles[i]) {
                     releaseObject(currentProjectile);
