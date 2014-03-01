@@ -3,8 +3,8 @@ var shaderFlame = new bufferParticles(Designer.colors.triad[2]);
 function bufferParticles(color){
 
     var mainScene,
-        projectileLifetime = 35,
-        projectileSpeed = 1,
+        projectileLifetime = 50,
+        projectileSpeed = 0.5,
         activeProjectiles = {},
         currentAnimationFrame = null,
         materials = [],
@@ -22,6 +22,29 @@ function bufferParticles(color){
         'base' : Designer.colors.analog[0]
     };
 
+    var flameTypes = {
+        jet : {
+            color : Designer.colors.triad[2],
+            size : 32
+        },
+        jet2 : {
+            color : Designer.colors.split[1],
+            size : 32
+        },
+        rocket : {
+            color : Designer.colors.complementary,
+            size : 25
+        },
+        bullet : {
+            color : Designer.colors.analog[1],
+            size : 32
+        },
+        base : {
+            color : Designer.colors.analog[0],
+            size : 32
+        }
+    };
+
     var flameVertexShader = [
         'uniform float lifetime;' ,
         'uniform float scale;' ,
@@ -35,7 +58,7 @@ function bufferParticles(color){
             'alpha = (lifetime-time) / lifetime;',
             'vColor = customColor;' ,
             'vec4 mvPosition = modelViewMatrix * vec4( position + velocity*time, 1.0 );' ,
-            'gl_PointSize = (size / 2.0  + size / 2.0 * alpha) * (scale / length(mvPosition.xyz));' ,
+            'gl_PointSize = (size * 0.75  + size * 0.25 * alpha) * (scale / length(mvPosition.xyz));' ,
             '//gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );' ,
             'gl_Position = projectionMatrix * mvPosition; ',
         '}'].join('\n');
@@ -70,6 +93,7 @@ function bufferParticles(color){
 
         color:     { type: "c", value: new THREE.Color( 0xffffff ) },
         texture:   { type: "t", value: THREE.ImageUtils.loadTexture( "img/particles/spark_3.png" ) },
+//        texture:   { type: "t", value: THREE.ImageUtils.loadTexture( "img/explosion_particle.png" ) },
         lifetime : { type: "f", value: projectileLifetime },
         scale : { type: "f", value: engy.renderer.domElement.height/2 }
 
@@ -207,8 +231,9 @@ function bufferParticles(color){
             angle = angle + 3.07 + Math.random()*0.14,
 //            angle = angle + 3.14,
             vecPosition = nextIndex * 3,
-            type = type || 'jet',
-            col = colors[type];
+            type = type ? flameTypes[type] : flameTypes.jet,
+            col = type.color,
+            size = type.size;
         var cos = Math.cos(angle), sin = Math.sin(angle);
         var selfSpeedX = cos*projectileSpeed + vX,
             selfSpeedY = sin*projectileSpeed + vY,
@@ -231,8 +256,10 @@ function bufferParticles(color){
         positions[vecPosition + 1] = positionY;
 
         valuesTime[nextIndex] = 0;
+        values_size[nextIndex] = size;
 
         geometry.attributes.velocity.needsUpdate = true;
+        geometry.attributes.size.needsUpdate = true;
         geometry.attributes.position.needsUpdate = true;
 
         if (nextIndex >= amount) {

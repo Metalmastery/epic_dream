@@ -44,7 +44,8 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
 
     // TODO implement damage, durability indication
     // TODO can compute the size of the indication box with boundingSphere
-    this.totalDurability = (Math.random()*1000>>0) + 20;
+//    this.totalDurability = (Math.random()*50>>0) + 20;
+    this.totalDurability = 20;
     this.durability = this.totalDurability;
     this.indicatorSize = 25;
 
@@ -53,7 +54,7 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
     this.target = null;
 
     this.lastFrame = new Date();
-    this.speedFactor = 0.01;
+    this.speedFactor = 0.1;
     this.rotationSpeedFactor = 1000;
     this.rotationAngle = this.currentSpeedY = this.currentSpeedX = this.rotationSpeed = 0;
 
@@ -62,6 +63,8 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
     this.pressedKeys = {};
     this.attackTimer = 0;
     this.attackRate = (Math.random()*100>>0) + 50;
+
+    this.colliderAccept = bitMapper.generateMask(['ship', 'projectile']);
 
     var self = this;
 
@@ -75,7 +78,6 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
             this.applyBehavior = this.applyPressedKeys;
             this.bindEvents();
             this.colliderType = bitMapper.generateMask(['ship', 'player']);
-            this.colliderAccept = bitMapper.generateMask(['ship', 'projectile']);
 //            this.prepareRandomMeshShip();
             this.geometry = Designer.torusShip();
 //            this.geometry = Designer.multiNodeShip();
@@ -90,7 +92,7 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
             this.faction = 2;
             this.rotationAngle = Math.random()*6.28;
             // TODO implement pre-orientation function
-            this.durability = this.totalDurability = 3;
+//            this.durability = this.totalDurability = 3;
 
 //            this.applyBehavior = this.followSimple;
 //            this.applyBehavior = this.followSimpleConstantSpeed;
@@ -108,7 +110,7 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
             // TODO implement LOCATOR and target capture/loose
 
             this.colliderType = bitMapper.generateMask(['ship', 'bot']);
-            this.colliderAccept = bitMapper.generateMask(['ship', 'projectile']);
+
             this.distance = 0;
             this.targetAngle = 0;
 //            this.prepareSimpleRandomShip();
@@ -168,33 +170,36 @@ Ship.prototype.start = function(){
 
     var self = this,
         callback = function(time){
-//            spawnRandomParticle(self.x, self.y,0, 0, 10);
-//            self.currenFrame = new Date();
-//            csl(scene.children.length);
+            if (self.target && !self.target.alive){
+                self.target = null;
+            }
+
             if (self.running) {
                 if (self.collide && self.collide.source != self){
                     // TODO implements collision checking and reactions
 
-//                    if (bitMapper.is('ship', self.collide) && self.collide.fleet.uniq != self.fleet.uniq) {
+                    if (bitMapper.is('ship', self.collide)/* && self.collide.fleet.uniq != self.fleet.uniq*/) {
 //                        self.stop();
-//                    }
-
-                    if (bitMapper.is('projectile', self.collide) && self.collide.source.fleet.uniq != self.fleet.uniq) {
-                        self.durability--;
-                        if (!self.collide.source.target){
-                            self.collide.source.fleet.reportTarget(self.collide.source, self);
-                        }
-//                        console.info('UNDER ATTACK', self.collide.source);
-                        if (!self.target) {
-                            self.fleet.reportTarget(self, self.collide.source);
-                        }
                     }
-//                    console.info(self.collide.fleet.uniq, self.fleet.uniq);
-//
-//                    if (!this.target && self.collide.source && self.collide.source.fleet && ) {
-//
-//                    }
 
+                    if (bitMapper.is('projectile', self.collide)/* && self.collide.source.fleet.uniq != self.fleet.uniq*/) {
+                        self.durability--;
+
+                        // TODO mutual targeting
+                        self.target = self.collide.source;
+                        self.collide.source.target = self;
+
+                        if (self.fleet){
+                            if (!self.collide.source.target){
+                                self.collide.source.fleet.reportTarget(self.collide.source, self);
+                            }
+                            console.info('UNDER ATTACK', self.collide.source);
+                            if (!self.target) {
+                                self.fleet.reportTarget(self, self.collide.source);
+                            }
+                        }
+//
+                    }
 
 //                    if (window.ship == self) console.log(self.durability);
                     self.collide = false;
@@ -257,7 +262,9 @@ Ship.prototype.followTest = function(delta) {
 
     if (!this.target.alive) {
 //        console.error('TARGET DESTROYED');
-        this.fleet.reportTargetDestroyed(this, this.target);
+        if (this.fleet) {
+            this.fleet.reportTargetDestroyed(this, this.target);
+        }
         this.target = null;
         return false;
     }
@@ -319,6 +326,7 @@ Ship.prototype.followTest = function(delta) {
 //
     if (this.attackTimer > this.attackRate && Math.abs(shootAngle) < 0.1 && this.distance < 500 && this.attackMode){
         Bullet.fire(this, this.rotationAngle);
+//        rocket.fireByParams(this, this.x, this.y, this.radius, this.rotationAngle, this.currentSpeedX, this.currentSpeedY, this.target);
         this.audio.play();
         this.attackTimer = 0;
     }
@@ -521,10 +529,12 @@ Ship.prototype.keydownEvents = {
         this.currentSpeedX = this.currentSpeedY = this.rotationSpeed = 0;
     },
     '32' : function(){
-//        Explosion.detonate(this);
-
         if (this.attackTimer > this.attackRate){
-            Bullet.fire(this, this.rotationAngle);
+//        Explosion.detonate(this);
+            rocket.fireByParams(this, this.x, this.y, this.radius, this.rotationAngle, this.currentSpeedX, this.currentSpeedY, this.target);
+//            rocket.fireByParams(this, this.x, this.y, this.radius, this.rotationAngle + 0.2, this.currentSpeedX, this.currentSpeedY, { x : 300, y : 300 });
+//            rocket.fireByParams(this, this.x, this.y, this.radius, this.rotationAngle - 0.2, this.currentSpeedX, this.currentSpeedY, { x : 300, y : 300 });
+//            Bullet.fire(this, this.rotationAngle);
             this.audio.currentTime = 0;
             this.audio.play();
             this.attackTimer = 0;

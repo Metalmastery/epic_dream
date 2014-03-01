@@ -14,6 +14,7 @@ function init(){
     Bullet.attachToScene(engy.scene);
 //    Flame.attachToScene(engy.scene);
     shaderFlame.attachToScene(engy.scene);
+    rocket.attachToScene(engy.scene);
     indicator.attachToScene(engy.scene);
 
     var ship = new Ship(0, 0, 'ship', null);
@@ -23,6 +24,7 @@ function init(){
 
     engy.addToMainLoop(Bullet);
     engy.addToMainLoop(shaderFlame);
+    engy.addToMainLoop(rocket);
     engy.addToMainLoop(ship);
 //    engy.addToMainLoop(indicator);
     engy.collider.add(ship);
@@ -41,21 +43,21 @@ function init(){
         }
     });
 
-//    createEnemies(ship);
+    createEnemies(ship);
 //    createTwoFaction(ship);
-    createFleet(ship);
+//    createFleet(ship);
 }
 
 function createFleet(ship){
 
     var fleet = new Fleet(300,300,null),
         playerFleet = new Fleet(0,0,null),
-        dist = 500,
+        dist = 300,
         amount1 = 5,
         amount2 = 4;
 
     for (var i = 0; i < amount1; i++) {
-        var dummy = new Ship(fleet.x + Math.random()*dist, fleet.x + Math.random()*dist, 'follow', null);
+        var dummy = new Ship(dist, dist - 2*Math.random()*dist, 'follow', null);
         dummy.start();
         fleet.add(dummy);
         engy.collider.add(dummy);
@@ -64,7 +66,7 @@ function createFleet(ship){
     }
 
     for (var i = 0; i < amount2; i++) {
-        var helper = new Ship(-Math.random()*dist, -Math.random()*dist, 'follow', null);
+        var helper = new Ship(-dist, dist - 2*Math.random()*dist, 'follow', null);
         helper.durability = helper.totalDurability = 4;
         helper.start();
         playerFleet.add(helper);
@@ -83,15 +85,18 @@ function createFleet(ship){
 function createEnemies(ship){
     var a = 0,
 //        distance = Math.random() * 1000 + 300,
-        distance = 500,
-        amount = 100,
+        distance = 300,
+        amount = 1,
         dummy;
     for (a = 0; a < 6.28; a += 6.28/amount){
 //        distance = 200 + Math.cos(a*3) * 100;
-        dummy = new Ship(distance * Math.cos(a), distance * Math.sin(a), 'follow', ship);
+//        dummy = new Ship(distance * Math.cos(a), distance * Math.sin(a), 'follow', ship);
+        dummy = new Ship(distance, distance, 'follow', null);
         dummy.start();
         engy.collider.add(dummy);
         engy.addToMainLoop(dummy);
+
+        ship.target = dummy;
     }
 }
 
@@ -134,6 +139,10 @@ function enableCollider(){
     var counter = Bullet.projectilesArray.length;
     while (--counter) {
         engy.collider.add(Bullet.projectilesArray[counter].position);
+    }
+    var counter = rocket.projectilesArray.length;
+    while (--counter) {
+        engy.collider.add(rocket.projectilesArray[counter]);
     }
 }
 

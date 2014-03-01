@@ -59,8 +59,9 @@ var bitMapper = (function(){
         'virtual' : 1,
         'ship' : 2,
         'projectile' : 3,
-        'bot' : 4,
-        'player' : 5
+        'rocket' : 4,
+        'bot' : 5,
+        'player' : 6
     }, inverseMap = [];
 
     for (var i in map){
