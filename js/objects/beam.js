@@ -51,6 +51,7 @@ function Beam (){
             positions[ i * 3 + 2 ] = 0;
 
         }
+        geometry.attributes.position.needsUpdate = true;
     }
 
     function fire(shooter){
