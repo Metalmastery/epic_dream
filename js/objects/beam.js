@@ -6,7 +6,8 @@ function Beam (){
         ray = new THREE.Vector3(),
         geometry = new THREE.BufferGeometry(),
         material = new THREE.LineBasicMaterial({ vertexColors: true }),
-        amount = 10,
+        amount = 50,
+        nextIndex = 0,
         color = Designer.colors.base,
         mesh;
 
@@ -41,7 +42,16 @@ function Beam (){
     geometry.computeBoundingSphere();
 
     mesh = new THREE.Line( geometry, material, THREE.LinePieces );
-    engy.scene.add( mesh );
+
+    function update(time){
+        for ( var i = 0; i < amount; i ++ ) {
+
+            positions[ i * 3 ] = 0;
+            positions[ i * 3 + 1 ] = 0;
+            positions[ i * 3 + 2 ] = 0;
+
+        }
+    }
 
     function fire(shooter){
         var angle = shooter.rotationAngle,
@@ -54,14 +64,17 @@ function Beam (){
 
         var intersects = rayCaster.intersectObjects( engy.scene.children, false );
 
-        var i = 0;
+        var i = nextIndex;
         if (intersects.length) {
-            var obj = intersects[i];
-                shaderFlame.fireByParams('jet', obj.point.x, obj.point.y, 0, 0, cos, sin);
+            var obj = intersects[0];
+                shaderFlame.fireByParams('bullet', obj.point.x, obj.point.y, 0, 0, cos, sin);
             positions[i * 3] = shooter.x;
             positions[i * 3 + 1] = shooter.y;
             positions[i * 3 + 3] = obj.point.x;
             positions[i * 3 + 4] = obj.point.y;
+            if (obj.object.ship){
+                obj.object.ship.durability--;
+            }
         } else {
             positions[i * 3] = shooter.x;
             positions[i * 3 + 1] = shooter.y;
@@ -71,11 +84,17 @@ function Beam (){
 
         geometry.attributes.position.needsUpdate = true;
 
-
-        console.log(intersects);
-
+        nextIndex+=2;
+        if (nextIndex >= amount){
+            nextIndex = 0;
+        }
     }
 
     this.fire = fire;
+    this.mesh = mesh;
+    this.update = update;
+
+    engy.scene.add( mesh );
+    engy.addToMainLoop(this);
 
 }

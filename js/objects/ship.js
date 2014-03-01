@@ -132,7 +132,7 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
         default :
             this.applyBehavior = this.bullet;
     }
-
+    this.geometry.ship = this;
 };
 
 Ship.prototype.applyWebSockets = function(data){
@@ -325,6 +325,7 @@ Ship.prototype.followTest = function(delta) {
     this.attackTimer += delta;
 //
     if (this.attackTimer > this.attackRate && Math.abs(shootAngle) < 0.1 && this.distance < 500 && this.attackMode){
+//        beam.fire(this);
         Bullet.fire(this, this.rotationAngle);
 //        rocket.fireByParams(this, this.x, this.y, this.radius, this.rotationAngle, this.currentSpeedX, this.currentSpeedY, this.target);
         this.audio.play();
