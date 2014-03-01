@@ -1,17 +1,3 @@
-
-
-function noPool(constructorFn, poolSize){
-    if (typeof constructorFn != 'function' || !poolSize){
-        throw new Error('can\'t create pool, not enough arguments');
-    }
-
-    return {
-        getObject : function(){
-            return new constructorFn();
-        }
-    }
-}
-
 function Pool(options){
     if (typeof options.constructorFn != 'function' || !options.poolSize || typeof options.resetObjectProps != 'function'){
         throw new Error('can\'t create pool, not enough arguments');

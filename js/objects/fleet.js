@@ -70,6 +70,7 @@ Fleet.prototype.reportTargetDestroyed = function(reporter, target){
     }
     if (this.targets.length == 0 && this.targetFleet){
         console.info('FLEET DESTROYED');
+        alert(this.uniq + ' destroyed ' + this.targetFleet.uniq);
         this.targetFleet = null;
         this.targets.push(window.ship);
     }

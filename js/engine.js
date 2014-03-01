@@ -81,7 +81,7 @@ var engy = (function(){
         // TODO implement parallax background
 //        setBackground();
 //        gridHelper();
-        initAudio();
+//        initAudio();
     }
 
     function initAudio(){
