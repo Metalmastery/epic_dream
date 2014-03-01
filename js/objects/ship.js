@@ -529,16 +529,16 @@ Ship.prototype.keydownEvents = {
         this.currentSpeedX = this.currentSpeedY = this.rotationSpeed = 0;
     },
     '32' : function(){
-        if (this.attackTimer > this.attackRate){
+//        if (this.attackTimer > this.attackRate){
             beam.fire(this);
 //            rocket.fireByParams(this, this.x, this.y, this.radius, this.rotationAngle, this.currentSpeedX, this.currentSpeedY, this.target);
 //            rocket.fireByParams(this, this.x, this.y, this.radius, this.rotationAngle + 0.2, this.currentSpeedX, this.currentSpeedY, { x : 300, y : 300 });
 //            rocket.fireByParams(this, this.x, this.y, this.radius, this.rotationAngle - 0.2, this.currentSpeedX, this.currentSpeedY, { x : 300, y : 300 });
 //            Bullet.fire(this, this.rotationAngle);
-            this.audio.currentTime = 0;
-            this.audio.play();
-            this.attackTimer = 0;
-        }
+//            this.audio.currentTime = 0;
+//            this.audio.play();
+//            this.attackTimer = 0;
+//        }
 
         //var b = new Bullet(this.collider, this.ctx, this.x + 20*Math.cos(this.rotationAngle), this.y + 20*Math.sin(this.rotationAngle), this.rotationAngle);
 //        b.rotationAngle = this.rotationAngle;

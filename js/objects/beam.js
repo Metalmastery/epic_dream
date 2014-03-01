@@ -57,7 +57,7 @@ function Beam (){
         var i = 0;
         if (intersects.length) {
             var obj = intersects[i];
-//                shaderFlame.fireByParams('jet', obj.point.x, obj.point.y, 0, 0, 0, 0)
+                shaderFlame.fireByParams('jet', obj.point.x, obj.point.y, 0, 0, cos, sin);
             positions[i * 3] = shooter.x;
             positions[i * 3 + 1] = shooter.y;
             positions[i * 3 + 3] = obj.point.x;
@@ -65,8 +65,8 @@ function Beam (){
         } else {
             positions[i * 3] = shooter.x;
             positions[i * 3 + 1] = shooter.y;
-            positions[i * 3 + 3] = shooter.x + cos * 500;
-            positions[i * 3 + 4] = shooter.y + sin * 500;
+            positions[i * 3 + 3] = shooter.x + cos * 1500;
+            positions[i * 3 + 4] = shooter.y + sin * 1500;
         }
 
         geometry.attributes.position.needsUpdate = true;
