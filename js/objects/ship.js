@@ -530,8 +530,8 @@ Ship.prototype.keydownEvents = {
     },
     '32' : function(){
         if (this.attackTimer > this.attackRate){
-//        Explosion.detonate(this);
-            rocket.fireByParams(this, this.x, this.y, this.radius, this.rotationAngle, this.currentSpeedX, this.currentSpeedY, this.target);
+            beam.fire(this);
+//            rocket.fireByParams(this, this.x, this.y, this.radius, this.rotationAngle, this.currentSpeedX, this.currentSpeedY, this.target);
 //            rocket.fireByParams(this, this.x, this.y, this.radius, this.rotationAngle + 0.2, this.currentSpeedX, this.currentSpeedY, { x : 300, y : 300 });
 //            rocket.fireByParams(this, this.x, this.y, this.radius, this.rotationAngle - 0.2, this.currentSpeedX, this.currentSpeedY, { x : 300, y : 300 });
 //            Bullet.fire(this, this.rotationAngle);
