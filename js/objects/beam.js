@@ -8,7 +8,7 @@ function Beam (){
         material = new THREE.LineBasicMaterial({ vertexColors: true }),
         amount = 50,
         nextIndex = 0,
-        color = Designer.colors.base,
+        color = Designer.colors.split[1],
         mesh;
 
     geometry.addAttribute( 'position', Float32Array, amount, 3 );

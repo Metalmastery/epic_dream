@@ -77,11 +77,12 @@ var engy = (function(){
         camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1, 10000 );
         camera.position.set(0, 0, 1200);
         scene.add(camera);
-        setBackground();
+//        setBackground();
         // TODO implement parallax background
 //        setBackground();
 //        gridHelper();
 //        initAudio();
+        nebula();
     }
 
     function initAudio(){
@@ -125,14 +126,15 @@ var engy = (function(){
     }
 
     function setBackground(){
-        var floorTexture = new THREE.ImageUtils.loadTexture( 'img/noise_4.png' );
+//        var floorTexture = new THREE.ImageUtils.loadTexture( 'img/noise_4.png' );
+        var floorTexture = new THREE.ImageUtils.loadTexture( 'img/noise_5.png' );
 //        var floorTexture = new THREE.ImageUtils.loadTexture( 'img/worley3.png' );
-        floorTexture.repeat.set( 50,50 );
-        floorTexture.wrapS =THREE.RepeatWrapping;
-            floorTexture.wrapT = THREE.MirroredRepeatWrapping;
+        floorTexture.repeat.set( 10,10 );
+//        floorTexture.wrapS =THREE.RepeatWrapping;
+        floorTexture.wrapS = floorTexture.wrapT = THREE.MirroredRepeatWrapping;
 //        floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
 
-        var floorGeometry = new THREE.PlaneGeometry(10000, 10000, 50, 50);
+        var floorGeometry = new THREE.PlaneGeometry(102400, 102400, 1, 1);
         var offset = Math.random(),
             range = 0.1 * Math.random() + 0.1;
         console.log(Designer.colors.triad);
@@ -145,12 +147,12 @@ var engy = (function(){
         var mapper = ['a', 'b', 'c'];
         for (var i in floorGeometry.faces){
             for (var j = 0; j < 3; j++) {
-                floorGeometry.faces[i].vertexColors[j] = floorGeometry.colors[floorGeometry.faces[i][mapper[j]]];
+//                floorGeometry.faces[i].vertexColors[j] = floorGeometry.colors[floorGeometry.faces[i][mapper[j]]];
 
             }
         }
 
-        var floorMaterial = new THREE.MeshBasicMaterial( { vertexColors : THREE.VertexColors,map: floorTexture, side: THREE.DoubleSide, color : new THREE.Color(0x777777) } );
+        var floorMaterial = new THREE.MeshBasicMaterial( { fog : false, vertexColors : THREE.VertexColors,map: floorTexture, side: THREE.DoubleSide, color : new THREE.Color(0x777777) } );
         var floorMaterial2 = new THREE.MeshBasicMaterial( { vertexColors : THREE.VertexColors,map: floorTexture, side: THREE.DoubleSide, transparent : true, opacity : 0.3 } );
 //        var floorMaterial2 = new THREE.MeshBasicMaterial( { /*color : 0x112455,*/ map: floorTexture, side: THREE.DoubleSide, transparent : true, opacity : 0.5 } );
 
@@ -168,6 +170,89 @@ var engy = (function(){
         floor2.rotation.z = -1;
 //        floor.material.color.offsetHSL(0,0,-0.1);
 //        floor2.material.color.offsetHSL(0,0,-0.1);
+        scene.add(floor2);
+    }
+
+    function nebula(){
+        var simplex = new SimplexNoise(),
+            canvas = document.createElement('canvas');
+
+        canvas.height = 2048;
+        canvas.width = 2048;
+
+        var image = new Image(),
+            ctx = canvas.getContext('2d'),
+            imgdata = ctx.getImageData(0, 0, canvas.width, canvas.height),
+            data = imgdata.data,
+            t = 0,
+            starIntensity = 100;
+
+        var f1 = canvas.height / 4,
+            f2 = canvas.height / 16,
+            f3 = canvas.height / 64,
+            f4 = canvas.height / 128,
+            w = canvas.width,
+            h = canvas.height;
+
+        var intensity, rnd, rnd2,
+            baseHSL = Designer.colors.base.getHSL().h,
+            color = new THREE.Color();
+        for (var x = 0; x < w; x++) {
+            for (var y = 0; y < h; y++) {
+                var r = simplex.noise3D(x / f1, y / f1, t) * 0.7 + 0.3;
+                var g = simplex.noise3D(x / f2, y / f2, t);
+                var b = simplex.noise3D(x / f3, y / f3, t);
+                var d = simplex.noise3D(x / f4, y / f4, t);
+
+                rnd = Math.random();
+                rnd2 = Math.random();
+                intensity = (r + g/4 + b/16 + d/32);
+
+                var c1 = intensity * intensity * intensity,
+                    c2 = intensity,
+                    c3 = intensity * intensity * intensity * intensity;
+
+                color.setRGB(c1, c2, c3);
+                color.offsetHSL(baseHSL - color.getHSL().h, -1, 0/*1 - color.getHSL().l*/);
+                if (rnd2 > 0.995 ) {
+                    color.offsetHSL(0,1 - color.getHSL().h,color.getHSL().l)
+                }
+                data[(x + y * w) * 4 + 0] = color.r * 255;
+                data[(x + y * w) * 4 + 1] = color.g * 255;
+                data[(x + y * w) * 4 + 2] = color.g * 255;
+                data[(x + y * w) * 4 + 3] = 255;
+            }
+        }
+        ctx.putImageData(imgdata, 0, 0);
+
+        var floorTexture = new THREE.ImageUtils.loadTexture( canvas.toDataURL() );
+        floorTexture.repeat.set( 10,10 );
+        floorTexture.wrapS = floorTexture.wrapT = THREE.MirroredRepeatWrapping;
+
+        var floorGeometry = new THREE.PlaneGeometry(w * 100, h * 100, 50, 50);
+        var offset = Math.random(),
+            range = 0.1 * Math.random() + 0.1;
+        console.log(Designer.colors.triad);
+//        var color = Designer.colors.base.offsetHSL(0, 0, -Designer.colors.base.getHSL().l/2),
+//            hsl = color.getHSL();
+        for (var i in floorGeometry.vertices){
+            var color = Designer.colors.analog[Math.random()*2>>0].clone().offsetHSL(Math.random()*0.1-0.05, 0, 0.2);
+            floorGeometry.colors[i] = color;
+        }
+        var mapper = ['a', 'b', 'c'];
+        for (var i in floorGeometry.faces){
+            for (var j = 0; j < 3; j++) {
+                floorGeometry.faces[i].vertexColors[j] = floorGeometry.colors[floorGeometry.faces[i][mapper[j]]];
+            }
+        }
+
+        var floorMaterial = new THREE.MeshBasicMaterial( { blending : THREE.AdditiveBlending, fog : false, vertexColors : THREE.VertexColors,map: floorTexture, side: THREE.DoubleSide, color : new THREE.Color(0x777777) } );
+
+        var floor2 = new THREE.Mesh(floorGeometry, floorMaterial);
+        floor2.position.z = -5000;
+        floor2.position.x = -500;
+        floor2.position.y = -500;
+        floor2.rotation.z = -1;
         scene.add(floor2);
     }
 
