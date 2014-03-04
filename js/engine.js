@@ -82,7 +82,8 @@ var engy = (function(){
 //        setBackground();
 //        gridHelper();
 //        initAudio();
-        nebula();
+        createNebula();
+
     }
 
     function initAudio(){
@@ -173,19 +174,36 @@ var engy = (function(){
         scene.add(floor2);
     }
 
-    function nebula(){
-        var simplex = new SimplexNoise(),
-            canvas = document.createElement('canvas');
+    function createNebula(){
+        var star = new Image();
+        star.onload = function(){
+            nebula(star);
+        }
+        star.src = 'img/particles/star_4.png';
+    }
 
-        canvas.height = 2048;
-        canvas.width = 2048;
+    function nebula(star){
+        console.time('nebula');
+        var simplex = new SimplexNoise(),
+            canvas = document.createElement('canvas'),
+            overlay = document.createElement('canvas');
+
+        canvas.height = 1024;
+        canvas.width = 1024;
+        overlay.height = canvas.height;
+        overlay.width = canvas.width;
 
         var image = new Image(),
             ctx = canvas.getContext('2d'),
+            overlayCtx = overlay.getContext('2d'),
             imgdata = ctx.getImageData(0, 0, canvas.width, canvas.height),
             data = imgdata.data,
             t = 0,
-            starIntensity = 100;
+            starIntensity = 100,
+            starSize = 32;
+
+        overlayCtx.fillStyle = '0x000000';
+        overlayCtx.fillRect(0,0,overlay.width, overlay.height);
 
         var f1 = canvas.height / 4,
             f2 = canvas.height / 16,
@@ -196,7 +214,8 @@ var engy = (function(){
 
         var intensity, rnd, rnd2,
             baseHSL = Designer.colors.base.getHSL().h,
-            color = new THREE.Color();
+            color = new THREE.Color(),
+            hsl;
         for (var x = 0; x < w; x++) {
             for (var y = 0; y < h; y++) {
                 var r = simplex.noise3D(x / f1, y / f1, t) * 0.7 + 0.3;
@@ -208,14 +227,26 @@ var engy = (function(){
                 rnd2 = Math.random();
                 intensity = (r + g/4 + b/16 + d/32);
 
-                var c1 = intensity * intensity * intensity,
+                var c1 = Math.pow(intensity,3),
                     c2 = intensity,
-                    c3 = intensity * intensity * intensity * intensity;
+                    c3 = Math.pow(intensity,4);
 
-                color.setRGB(c1, c2, c3);
-                color.offsetHSL(baseHSL - color.getHSL().h, -1, 0/*1 - color.getHSL().l*/);
-                if (rnd2 > 0.995 ) {
-                    color.offsetHSL(0,1 - color.getHSL().h,color.getHSL().l)
+//                color.setRGB(c1, c2, c3);
+                color.setRGB(c2, c3, c1);
+//                color.setRGB(c3, c1, c2);
+
+//                color.offsetHSL(baseHSL - color.getHSL().h, color.getHSL().s < 0 ? -color.getHSL().s : -1, 0/*1 - color.getHSL().l*/);
+                color.offsetHSL(0, color.getHSL().s < 0 ? -color.getHSL().s : -1, 0/*1 - color.getHSL().l*/);
+//                color.offsetHSL(baseHSL - color.getHSL().h, -( color.getHSL().s*color.getHSL().s), -0.1);
+//                color.offsetHSL(0, color.getHSL().s < 0.3 ? -color.getHSL().s : -0.2, -0.1);
+//                color.offsetHSL(0, -color.getHSL().s/2, -0.1);
+//                color.offsetHSL(0, -color.getHSL().s, 0);
+                hsl = color.getHSL();
+                if (rnd2 > 0.99) {
+                    overlayCtx.rotate(Math.random());
+//                    starSize = 0 + 48 * hsl.l*(1-Math.abs(hsl.s));
+                    starSize = 0 + 48 * hsl.l;
+                    overlayCtx.drawImage(star, x, y, starSize, starSize);
                 }
                 data[(x + y * w) * 4 + 0] = color.r * 255;
                 data[(x + y * w) * 4 + 1] = color.g * 255;
@@ -223,6 +254,23 @@ var engy = (function(){
                 data[(x + y * w) * 4 + 3] = 255;
             }
         }
+//        ctx.putImageData(imgdata, 0, 0);
+
+        var starField = overlayCtx.getImageData(0, 0, w, h).data,
+            pos;
+
+//        overlayCtx.globalCompositeOperation='lighter';
+
+        for (var x = 0; x < w; x++) {
+            for (var y = 0; y < h; y++) {
+                pos = (x + y * w) * 4;
+                data[pos + 0] += starField[pos + 0];
+                data[pos + 1] += starField[pos + 1];
+                data[pos + 2] += starField[pos + 2];
+                data[pos + 3] += starField[pos + 3];
+            }
+        }
+
         ctx.putImageData(imgdata, 0, 0);
 
         var floorTexture = new THREE.ImageUtils.loadTexture( canvas.toDataURL() );
@@ -233,10 +281,11 @@ var engy = (function(){
         var offset = Math.random(),
             range = 0.1 * Math.random() + 0.1;
         console.log(Designer.colors.triad);
+        var color;
 //        var color = Designer.colors.base.offsetHSL(0, 0, -Designer.colors.base.getHSL().l/2),
 //            hsl = color.getHSL();
         for (var i in floorGeometry.vertices){
-            var color = Designer.colors.analog[Math.random()*2>>0].clone().offsetHSL(Math.random()*0.1-0.05, 0, 0.2);
+            color = Designer.colors.analog[Math.random()*2>>0].clone().offsetHSL(Math.random()*0.1-0.05, 0, 0.2);
             floorGeometry.colors[i] = color;
         }
         var mapper = ['a', 'b', 'c'];
@@ -246,7 +295,7 @@ var engy = (function(){
             }
         }
 
-        var floorMaterial = new THREE.MeshBasicMaterial( { blending : THREE.AdditiveBlending, fog : false, vertexColors : THREE.VertexColors,map: floorTexture, side: THREE.DoubleSide, color : new THREE.Color(0x777777) } );
+        var floorMaterial = new THREE.MeshBasicMaterial( { fog : false, vertexColors : THREE.VertexColors,map: floorTexture, side: THREE.DoubleSide } );
 
         var floor2 = new THREE.Mesh(floorGeometry, floorMaterial);
         floor2.position.z = -5000;
@@ -254,6 +303,9 @@ var engy = (function(){
         floor2.position.y = -500;
         floor2.rotation.z = -1;
         scene.add(floor2);
+
+        window.nebMat = floorMaterial;
+        console.timeEnd('nebula');
     }
 
     function gridHelper(){
