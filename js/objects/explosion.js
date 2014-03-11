@@ -2,15 +2,12 @@ var Explosion = (function(){
     var pool = [],
         position = 0,
         poolSize = 100,
-        audio = new Audio(),
         explosionSize = 50,
         pi2 = Math.PI * 2,
         mainScene = null,
         baseColor = 0xcc9944,
 //        baseColor = 0xff6644,
         particleSize = 110;
-
-    audio.src = 'sound/explosion_1.wav';
 
     for (var i = 0; i < poolSize; i++) {
         var particles = new THREE.Geometry(),
@@ -55,8 +52,6 @@ var Explosion = (function(){
     function run(scene){
         var item = pool[position], length = 10;
         scene.add(item);
-        audio.currentTime = 0;
-        audio.play();
         function callback(){
             item.material.opacity -= 0.05;
             if (item.material.opacity > 0) {
@@ -76,14 +71,18 @@ var Explosion = (function(){
     }
 
     return {
-        detonate : function(coord){
-//            console.log(pool);
+        detonate : function(obj){
+            audioController.playSound('explosion', obj.x, obj.y);
+            shaderFlame.fireExplosion(obj);
+        },
+        detonateOld : function(ship){
+            audioController.playSound('explosion', ship.x, ship.y);
             position++;
             if (position >= pool.length){
                 position = 0;
             }
-            pool[position].position.x = coord.x;
-            pool[position].position.y = coord.y;
+            pool[position].position.x = ship.x;
+            pool[position].position.y = ship.y;
             pool[position].material.opacity = 1;
             pool[position].rotation.z = Math.random() * pi2;
             pool[position].scale.setLength(1);

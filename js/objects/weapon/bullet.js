@@ -47,8 +47,9 @@ var Bullet = (function(){
         webkitCancelRequestAnimationFrame(currentAnimationFrame);
     }
 
-    function fire(shooter, angle){
-        var proj = projectile();
+    function fire(shooter){
+        var proj = projectile(),
+            angle = shooter.rotationAngle;
 //        console.log(proj, shooter.geometry.position, bulletSystemGeometry);
         proj.geometry.vertices.push(new THREE.Vector3(Math.cos(angle)*10, Math.sin(angle)*10, 0));
         proj.geometry.vertices.push(new THREE.Vector3(Math.cos(angle)*20, Math.sin(angle)*20, 0));

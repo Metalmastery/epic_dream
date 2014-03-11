@@ -29,7 +29,7 @@ function bufferParticles(color){
         },
         jet2 : {
             color : Designer.colors.split[1],
-            size : 32
+            size : 64
         },
         rocket : {
             color : Designer.colors.complementary,
@@ -269,10 +269,54 @@ function bufferParticles(color){
         }
     }
 
+    function fireExplosion(ship){
+        var angle,
+            vecPosition,
+            type = flameTypes['jet2'],
+            col = type.color,
+            speed = 5,
+            size = type.size;
+        for (var i = 0; i < 50; i++){
+            vecPosition = nextIndex * 3;
+            angle = Math.random()*6.28;
+            speed = Math.random()*4;
+            var cos = Math.cos(angle), sin = Math.sin(angle),
+                selfSpeedX = cos*speed + ship.currentSpeedX,
+                selfSpeedY = sin*speed + ship.currentSpeedY,
+
+                positionY = ship.y,
+                positionX = ship.x;
+
+            valuesVelocity[vecPosition] = selfSpeedX;
+            valuesVelocity[vecPosition + 1] = selfSpeedY;
+
+            values_color[vecPosition] = col.r;
+            values_color[vecPosition + 1] = col.g;
+            values_color[vecPosition + 2] = col.b;
+
+            positions[vecPosition] = positionX;
+            positions[vecPosition + 1] = positionY;
+
+            valuesTime[nextIndex] = 0;
+            values_size[nextIndex] = size;
+
+            if (nextIndex >= amount) {
+                nextIndex = 0;
+            } else {
+                nextIndex++;
+            }
+        }
+        geometry.attributes.velocity.needsUpdate = true;
+        geometry.attributes.size.needsUpdate = true;
+        geometry.attributes.position.needsUpdate = true;
+
+    }
+
 
     createSystem();
 
     this.fire = fire;
+    this.fireExplosion = fireExplosion;
     this.fireByParams = fireByParams;
     this.attachToScene = attachToScene;
     this.stop = stop;

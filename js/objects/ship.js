@@ -18,10 +18,6 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
     this.x = startX ? startX : 0;
     this.y = startY ? startY : 0;
 
-    this.audio = new Audio();
-    this.audio.src = 'sound/laser_' + (1 + Math.random()*4 + 0.5>> 0) + '.wav';
-    this.audio.volume = 0.5;
-    //TODO single audio machine
     //TODO channel registration for every member
 
     this.flame = shaderFlame;
@@ -52,11 +48,13 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
     this.radius = 7;
 
     this.target = null;
+    this.targetAngle = 0;
 
     this.lastFrame = new Date();
     this.speedFactor = 0.1;
     this.rotationSpeedFactor = 1000;
     this.rotationAngle = this.currentSpeedY = this.currentSpeedX = this.rotationSpeed = 0;
+    this.speedLimit = 2;
 
     this.weapon = 'bullet';
 
@@ -280,7 +278,8 @@ Ship.prototype.followTest = function(delta) {
         distY = this.target.y - this.y,
         vDiffX = this.target.currentSpeedX - this.currentSpeedX,
         vDiffY = this.target.currentSpeedY - this.currentSpeedY,
-        projectileTime = this.distance / 10;
+        projectileTime = this.distance / 10,
+        vDeltaX, vDeltaY;
 
     this.cos = cos;
     this.sin = sin;
@@ -308,8 +307,10 @@ Ship.prototype.followTest = function(delta) {
     }
 
     if (this.distance > 200 && Math.abs(this.targetAngle) < 0.2 || force) {
-        this.currentSpeedX += cos*delta/factor;
-        this.currentSpeedY += sin*delta/factor;
+        vDeltaX = cos*delta/factor;
+        vDeltaY = sin*delta/factor;
+        this.currentSpeedX += vDeltaX*(Math.abs(this.currentSpeedX+2*vDeltaX) < this.speedLimit);
+        this.currentSpeedY += vDeltaY*(Math.abs(this.currentSpeedX+2*vDeltaY) < this.speedLimit);
 
         this.flame.fireByParams('jet2',this.x, this.y, this.radius, this.rotationAngle,this.currentSpeedX,this.currentSpeedY);
     }
@@ -326,9 +327,8 @@ Ship.prototype.followTest = function(delta) {
 //
     if (this.attackTimer > this.attackRate && Math.abs(shootAngle) < 0.1 && this.distance < 500 && this.attackMode){
 //        beam.fire(this);
-        Bullet.fire(this, this.rotationAngle);
-//        rocket.fireByParams(this, this.x, this.y, this.radius, this.rotationAngle, this.currentSpeedX, this.currentSpeedY, this.target);
-        this.audio.play();
+//        bullet.fire(this);
+        rocket.fire(this);
         this.attackTimer = 0;
     }
 
@@ -367,7 +367,7 @@ Ship.prototype.seek = function(delta){
     this.attackTimer += delta;
 
     if (this.attackTimer > this.attackRate){
-        Bullet.fire(this, this.rotationAngle);
+        bullet.fire(this, this.rotationAngle);
         this.attackTimer = 0;
     }
 };
@@ -408,7 +408,7 @@ Ship.prototype.followAggressive = function(delta) {
     if (this.attackTimer > this.attackRate /*&& this.distance < 500*/ /*&& this.targetAngle < 0.2*/){
         // TODO implement conditions for attack - right angle, fire rate, right distance
         // TODO implement PREDICTION for attack while moving (try this.currentSpeed* in target angle computation)
-        Bullet.fire(this, this.rotationAngle);
+        bullet.fire(this, this.rotationAngle);
         this.attackTimer = 0;
     }
 };
@@ -430,7 +430,7 @@ Ship.prototype.followAggressiveConstantSpeed = function(delta) {
 //    this.attackTimer += delta;
 
     if (this.attackTimer > this.attackRate && this.attackMode){
-        Bullet.fire(this, this.rotationAngle);
+        bullet.fire(this, this.rotationAngle);
         this.audio.play();
         this.attackTimer = 0;
     }
@@ -453,7 +453,7 @@ Ship.prototype.followSimple = function(delta) {
     this.attackTimer += delta;
 
     if (this.attackTimer > this.attackRate){
-        Bullet.fire(this, this.rotationAngle);
+        bullet.fire(this, this.rotationAngle);
         this.attackTimer = 0;
     }
 
@@ -476,7 +476,7 @@ Ship.prototype.followSimpleConstantSpeed = function(delta) {
     this.attackTimer += delta;
 
     if (this.attackTimer > this.attackRate){
-        Bullet.fire(this, this.rotationAngle);
+        bullet.fire(this, this.rotationAngle);
         this.attackTimer = 0;
     }
 
@@ -511,8 +511,8 @@ Ship.prototype.keydownEvents = {
         var deltaX = Math.cos(this.rotationAngle)*time/this.speedFactor,
             deltaY = Math.sin(this.rotationAngle)*time/this.speedFactor;
 //        if (Math.pow(this.currentSpeedX + deltaX, 2) + Math.pow(this.currentSpeedY + deltaY, 2) < 36){
-            this.currentSpeedX += Math.cos(this.rotationAngle)*time/this.speedFactor;
-            this.currentSpeedY += Math.sin(this.rotationAngle)*time/this.speedFactor;
+            this.currentSpeedX += deltaX*(Math.abs(this.currentSpeedX+2*deltaX) < this.speedLimit);
+            this.currentSpeedY += deltaY*(Math.abs(this.currentSpeedY+2*deltaY) < this.speedLimit);
 //        }
         this.flame.fireByParams('jet',this.x, this.y, this.radius, this.rotationAngle,this.currentSpeedX,this.currentSpeedY);
     },
@@ -532,16 +532,14 @@ Ship.prototype.keydownEvents = {
     '32' : function(){
         if (this.attackTimer > this.attackRate){
 //            beam.fire(this);
-            rocket.fireByParams(this, this.x, this.y, this.radius, this.rotationAngle, this.currentSpeedX, this.currentSpeedY, this.target);
+            rocket.fire(this);
+//            bullet.fire(this);
 //            rocket.fireByParams(this, this.x, this.y, this.radius, this.rotationAngle + 0.2, this.currentSpeedX, this.currentSpeedY, this.target);
 //            rocket.fireByParams(this, this.x, this.y, this.radius, this.rotationAngle - 0.2, this.currentSpeedX, this.currentSpeedY, this.target);
-//            Bullet.fire(this, this.rotationAngle);
-//            this.audio.currentTime = 0;
-//            this.audio.play();
             this.attackTimer = 0;
         }
 
-        //var b = new Bullet(this.collider, this.ctx, this.x + 20*Math.cos(this.rotationAngle), this.y + 20*Math.sin(this.rotationAngle), this.rotationAngle);
+        //var b = new bullet(this.collider, this.ctx, this.x + 20*Math.cos(this.rotationAngle), this.y + 20*Math.sin(this.rotationAngle), this.rotationAngle);
 //        b.rotationAngle = this.rotationAngle;
         this.pressedKeys['80'] = false;
     },
@@ -563,16 +561,14 @@ Ship.prototype.keydownEvents = {
     '101': function(time){
         var halfWidth = bounds.width >> 1,
             halfHeight = bounds.height >> 1;
-        var targetAngle = Math.atan2((this.mouseX - halfWidth)*Math.sin(this.rotationAngle) - Math.cos(this.rotationAngle)*(halfHeight - this.mouseY), (this.mouseX - halfWidth)* Math.cos(this.rotationAngle) + Math.sin(this.rotationAngle)*(halfHeight - this.mouseY));
-        if (Math.abs(targetAngle) > 0.05){
+        this.targetAngle = Math.atan2((this.mouseX - halfWidth)*Math.sin(this.rotationAngle) - Math.cos(this.rotationAngle)*(halfHeight - this.mouseY), (this.mouseX - halfWidth)* Math.cos(this.rotationAngle) + Math.sin(this.rotationAngle)*(halfHeight - this.mouseY));
+        if (Math.abs(this.targetAngle) > 0.05){
 //            this.rotationSpeed = - targetAngle / (Math.abs(targetAngle)*10)*time; // TODO use rotationSpeedFactor to adjust rotation speed
-            this.rotationSpeed = - targetAngle / (Math.abs(targetAngle + 0.0000001)*this.rotationSpeedFactor);
-
+            this.rotationSpeed = - this.targetAngle / (Math.abs(this.targetAngle + 0.0000001)*this.rotationSpeedFactor);
         } else {
             this.rotationSpeed = 0;
-            this.rotationAngle -= targetAngle;
+            this.rotationAngle -= this.targetAngle;
         }
-
     }
 };
 
@@ -595,6 +591,7 @@ Ship.prototype.action = function(time){
     this.geometry.position.x = this.x;
     this.geometry.position.y = this.y;
     this.geometry.rotation.z = this.rotationAngle;
+    this.geometry.rotation.x = this.targetAngle;
 //    this.geometry.rotation.x = -this.rotationSpeed*5; // TODO rotation around the own axis while rotating on Z
 //    document.body.style.backgroundPosition = -(this.x>>0) + 'px ' + (this.y>>0) + 'px';
 };

@@ -268,7 +268,7 @@ function rocketParticles2(){
     }
 
     function fireByParams(shooter, x, y, shipRadius, angle, vX, vY, target){
-
+        audioController.playSound('rocket',x,y);
         var proj = getObject();
         var cos = Math.cos(angle), sin = Math.sin(angle);
         var selfSpeedX = cos*projectileSpeed,
@@ -286,9 +286,29 @@ function rocketParticles2(){
         return proj;
     }
 
+    function fire(ship){
+        audioController.playSound('rocket', ship.x, ship.y);
+        var proj = getObject();
+        var cos = Math.cos(ship.rotationAngle), sin = Math.sin(ship.rotationAngle);
+        var selfSpeedX = cos*projectileSpeed,
+            selfSpeedY = sin*projectileSpeed;
+        proj.speedX = selfSpeedX + ship.currentSpeedX;
+        proj.speedY = selfSpeedY + ship.currentSpeedY;
+        proj.x = ship.x + proj.speedX;
+        proj.y = ship.y + proj.speedY;
+        proj.source = ship;
+        proj.rotation = ship.rotationAngle;
+        proj.target = ship.target;
+        proj.lifetime = projectileLifetime;
+
+        activeProjectiles[proj.id] = proj.id;
+        return proj;
+    }
+
     createSystem();
 
     this.fireByParams = fireByParams;
+    this.fire = fire;
     this.attachToScene = attachToScene;
     this.stop = stop;
     this.update = update;

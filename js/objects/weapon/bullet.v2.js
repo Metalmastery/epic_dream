@@ -1,7 +1,7 @@
 // TODO implement bufferGeometry
 // TODO implement objectPool system to manage busy/gree and visible\invisible bullets
 
-var Bullet = new particles();
+var bullet = new particles();
 function particles(){
 
     var mainScene,
@@ -158,8 +158,10 @@ function particles(){
         webkitCancelRequestAnimationFrame(currentAnimationFrame);
     }
 
-    function fire(shooter, angle){
-        var proj = getObject();
+    function fire(shooter){
+        audioController.playSound('projectile', shooter.x, shooter.y);
+        var proj = getObject(),
+            angle = shooter.rotationAngle;
 //        console.log(proj, shooter.geometry.position, bulletSystemGeometry);
         var cos = Math.cos(angle), sin = Math.sin(angle);
         var selfSpeedX = cos*projectileSpeed,

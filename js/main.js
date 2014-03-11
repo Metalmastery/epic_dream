@@ -11,7 +11,7 @@ var scene, renderer,
 function init(){
 
     Explosion.attachToScene(engy.scene);
-    Bullet.attachToScene(engy.scene);
+    bullet.attachToScene(engy.scene);
 //    Flame.attachToScene(engy.scene);
     shaderFlame.attachToScene(engy.scene);
     rocket.attachToScene(engy.scene);
@@ -19,10 +19,11 @@ function init(){
 
     var ship = new Ship(0, 0, 'ship', null);
 //    indicator.add(ship);
-    engy.followCamera(ship);
+    engy.attachCamera(ship);
+    audioController.attachListener(ship);
     ship.start();
 
-    engy.addToMainLoop(Bullet);
+    engy.addToMainLoop(bullet);
     engy.addToMainLoop(shaderFlame);
     engy.addToMainLoop(rocket);
     engy.addToMainLoop(ship);
@@ -136,9 +137,9 @@ function bloom(){
 }
 
 function enableCollider(){
-    var counter = Bullet.projectilesArray.length;
+    var counter = bullet.projectilesArray.length;
     while (--counter) {
-        engy.collider.add(Bullet.projectilesArray[counter].position);
+        engy.collider.add(bullet.projectilesArray[counter].position);
     }
     var counter = rocket.projectilesArray.length;
     while (--counter) {

@@ -55,6 +55,7 @@ function Beam (){
     }
 
     function fire(shooter){
+        audioController.playSound('beam', shooter.x, shooter.y);
         var angle = shooter.rotationAngle,
             sin = Math.sin(angle),
             cos = Math.cos(angle);

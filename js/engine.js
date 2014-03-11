@@ -4,7 +4,6 @@ var engy = (function(){
         counter = 0,
         scene,
         camera,
-        audio,
         collider,
         renderer,
         watched = {x : 0, y : 0},
@@ -28,6 +27,7 @@ var engy = (function(){
                     gameSpeed += 0.1;
                 }
             },
+            89 : screenShot,
             90 : toggleGamePause
 
         };
@@ -79,19 +79,10 @@ var engy = (function(){
         scene.add(camera);
 //        setBackground();
         // TODO implement parallax background
-//        setBackground();
+        setBackground();
 //        gridHelper();
-//        initAudio();
-        createNebula();
+//        createNebula();
 
-    }
-
-    function initAudio(){
-        audio = new Audio();
-        audio.src = 'sound/music/rez_kenet_-_unreeeal_superhero_3.mp3';
-        audio.play();
-        audio.loop = true;
-        window.au = audio;
     }
 
     function createEnemy(ship){
@@ -127,20 +118,17 @@ var engy = (function(){
     }
 
     function setBackground(){
-//        var floorTexture = new THREE.ImageUtils.loadTexture( 'img/noise_4.png' );
-        var floorTexture = new THREE.ImageUtils.loadTexture( 'img/noise_5.png' );
+        var floorTexture = new THREE.ImageUtils.loadTexture( 'img/noise_4.png' );
+//        var floorTexture = new THREE.ImageUtils.loadTexture( 'img/noise_5.png' );
 //        var floorTexture = new THREE.ImageUtils.loadTexture( 'img/worley3.png' );
-        floorTexture.repeat.set( 10,10 );
+        floorTexture.repeat.set( 20,20 );
 //        floorTexture.wrapS =THREE.RepeatWrapping;
         floorTexture.wrapS = floorTexture.wrapT = THREE.MirroredRepeatWrapping;
 //        floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
 
-        var floorGeometry = new THREE.PlaneGeometry(102400, 102400, 1, 1);
+        var floorGeometry = new THREE.PlaneGeometry(10000, 10000, 100, 100);
         var offset = Math.random(),
             range = 0.1 * Math.random() + 0.1;
-        console.log(Designer.colors.triad);
-//        var color = Designer.colors.base.offsetHSL(0, 0, -Designer.colors.base.getHSL().l/2),
-//            hsl = color.getHSL();
         for (var i in floorGeometry.vertices){
             var color = Designer.colors.analog[Math.random()*2>>0].clone().offsetHSL(Math.random()*0.1-0.05, -0.5, Math.random()*0.6 - 0.4);
             floorGeometry.colors[i] = color;
@@ -148,23 +136,12 @@ var engy = (function(){
         var mapper = ['a', 'b', 'c'];
         for (var i in floorGeometry.faces){
             for (var j = 0; j < 3; j++) {
-//                floorGeometry.faces[i].vertexColors[j] = floorGeometry.colors[floorGeometry.faces[i][mapper[j]]];
+                floorGeometry.faces[i].vertexColors[j] = floorGeometry.colors[floorGeometry.faces[i][mapper[j]]];
 
             }
         }
 
         var floorMaterial = new THREE.MeshBasicMaterial( { fog : false, vertexColors : THREE.VertexColors,map: floorTexture, side: THREE.DoubleSide, color : new THREE.Color(0x777777) } );
-        var floorMaterial2 = new THREE.MeshBasicMaterial( { vertexColors : THREE.VertexColors,map: floorTexture, side: THREE.DoubleSide, transparent : true, opacity : 0.3 } );
-//        var floorMaterial2 = new THREE.MeshBasicMaterial( { /*color : 0x112455,*/ map: floorTexture, side: THREE.DoubleSide, transparent : true, opacity : 0.5 } );
-
-
-
-        var floor = new THREE.Mesh(floorGeometry, floorMaterial2);
-        floor.position.z = -1600;
-        floor.rotation.z = -2;
-//        scene.add(floor);
-
-        window.floor = floor;
 
         var floor2 = new THREE.Mesh(floorGeometry, floorMaterial);
         floor2.position.z = -1700;
@@ -216,31 +193,48 @@ var engy = (function(){
             baseHSL = Designer.colors.base.getHSL().h,
             color = new THREE.Color(),
             hsl;
+
+        //original powers - 3, 1, 4
+        // 1 4 2
+        // 2 3 3
+        // 2 2 4
+        // 4 2 2
+        // 2 3 4
+        var powers = [];
+        for (var i = 0; i < 3; i++) {
+            powers.push(1 + Math.random()*4>>0);
+        }
+
+        window.powers = powers;
+
+
         for (var x = 0; x < w; x++) {
             for (var y = 0; y < h; y++) {
-                var r = simplex.noise3D(x / f1, y / f1, t) * 0.7 + 0.3;
-                var g = simplex.noise3D(x / f2, y / f2, t);
-                var b = simplex.noise3D(x / f3, y / f3, t);
-                var d = simplex.noise3D(x / f4, y / f4, t);
+//                t = (Math.pow(x - w,2)+Math.pow(y - h,2))/100000;
+                var r = simplex.noise2D(x / f1, y / f1) * 0.7 + 0.3;
+                var g = simplex.noise2D(x / f2, y / f2);
+                var b = simplex.noise2D(x / f3, y / f3);
+                var d = simplex.noise2D(x / f4, y / f4);
 
                 rnd = Math.random();
                 rnd2 = Math.random();
                 intensity = (r + g/4 + b/16 + d/32);
 
-                var c1 = Math.pow(intensity,3),
-                    c2 = intensity,
-                    c3 = Math.pow(intensity,4);
+                var c1 = Math.pow(intensity,powers[0]),
+                    c2 = Math.pow(intensity,powers[1]),
+                    c3 = Math.pow(intensity,powers[2]);
 
-//                color.setRGB(c1, c2, c3);
-                color.setRGB(c2, c3, c1);
+                color.setRGB(c1, c2, c3);
+
+//                color.setRGB(c2, c3, c1);
 //                color.setRGB(c3, c1, c2);
 
 //                color.offsetHSL(baseHSL - color.getHSL().h, color.getHSL().s < 0 ? -color.getHSL().s : -1, 0/*1 - color.getHSL().l*/);
-                color.offsetHSL(0, color.getHSL().s < 0 ? -color.getHSL().s : -1, 0/*1 - color.getHSL().l*/);
+//                color.offsetHSL(0, color.getHSL().s < 0 ? -color.getHSL().s : -1, 0/*1 - color.getHSL().l*/);
 //                color.offsetHSL(baseHSL - color.getHSL().h, -( color.getHSL().s*color.getHSL().s), -0.1);
 //                color.offsetHSL(0, color.getHSL().s < 0.3 ? -color.getHSL().s : -0.2, -0.1);
 //                color.offsetHSL(0, -color.getHSL().s/2, -0.1);
-//                color.offsetHSL(0, -color.getHSL().s, 0);
+                color.offsetHSL(0, -1, 0);
                 hsl = color.getHSL();
                 if (rnd2 > 0.99) {
                     overlayCtx.rotate(Math.random());
@@ -291,7 +285,7 @@ var engy = (function(){
         var mapper = ['a', 'b', 'c'];
         for (var i in floorGeometry.faces){
             for (var j = 0; j < 3; j++) {
-                floorGeometry.faces[i].vertexColors[j] = floorGeometry.colors[floorGeometry.faces[i][mapper[j]]];
+//                floorGeometry.faces[i].vertexColors[j] = floorGeometry.colors[floorGeometry.faces[i][mapper[j]]];
             }
         }
 
@@ -395,7 +389,7 @@ var engy = (function(){
         scene : scene,
         camera : camera,
         renderer : renderer,
-        followCamera : attachCamera,
+        attachCamera : attachCamera,
         setGameSpeedImmediately : setGameSpeedImmediately,
         setGameSpeedGradually : setGameSpeedGradually
     }
