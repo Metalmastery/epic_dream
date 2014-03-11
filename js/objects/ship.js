@@ -327,8 +327,8 @@ Ship.prototype.followTest = function(delta) {
 //
     if (this.attackTimer > this.attackRate && Math.abs(shootAngle) < 0.1 && this.distance < 500 && this.attackMode){
 //        beam.fire(this);
-//        bullet.fire(this);
-        rocket.fire(this);
+        bullet.fire(this);
+//        rocket.fire(this);
         this.attackTimer = 0;
     }
 
