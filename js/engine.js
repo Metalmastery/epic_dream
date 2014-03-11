@@ -79,9 +79,9 @@ var engy = (function(){
         scene.add(camera);
 //        setBackground();
         // TODO implement parallax background
-        setBackground();
+//        setBackground();
 //        gridHelper();
-//        createNebula();
+        createNebula();
 
     }
 
@@ -155,7 +155,7 @@ var engy = (function(){
         var star = new Image();
         star.onload = function(){
             nebula(star);
-        }
+        };
         star.src = 'img/particles/star_4.png';
     }
 
@@ -190,6 +190,7 @@ var engy = (function(){
             h = canvas.height;
 
         var intensity, rnd, rnd2,
+            vecPosition,
             baseHSL = Designer.colors.base.getHSL().h,
             color = new THREE.Color(),
             hsl;
@@ -229,23 +230,30 @@ var engy = (function(){
 //                color.setRGB(c2, c3, c1);
 //                color.setRGB(c3, c1, c2);
 
-//                color.offsetHSL(baseHSL - color.getHSL().h, color.getHSL().s < 0 ? -color.getHSL().s : -1, 0/*1 - color.getHSL().l*/);
+                color.offsetHSL(baseHSL - color.getHSL().h, color.getHSL().s < 0 ? -color.getHSL().s : -1, 0/*1 - color.getHSL().l*/);
 //                color.offsetHSL(0, color.getHSL().s < 0 ? -color.getHSL().s : -1, 0/*1 - color.getHSL().l*/);
 //                color.offsetHSL(baseHSL - color.getHSL().h, -( color.getHSL().s*color.getHSL().s), -0.1);
 //                color.offsetHSL(0, color.getHSL().s < 0.3 ? -color.getHSL().s : -0.2, -0.1);
 //                color.offsetHSL(0, -color.getHSL().s/2, -0.1);
-                color.offsetHSL(0, -1, 0);
+//                color.offsetHSL(0, -1, 0);
                 hsl = color.getHSL();
                 if (rnd2 > 0.99) {
-                    overlayCtx.rotate(Math.random());
+//
 //                    starSize = 0 + 48 * hsl.l*(1-Math.abs(hsl.s));
-                    starSize = 0 + 48 * hsl.l;
-                    overlayCtx.drawImage(star, x, y, starSize, starSize);
+//                    starSize = 1 + 48 * hsl.l * hsl.s;
+//                    starSize = Math.random() + 10 * (Math.abs(color.r) + Math.abs(color.g) + Math.abs(color.b));
+                    starSize = 1 + Math.random() + 10 * (color.r + color.g + color.b);
+                    overlayCtx.save();
+                    overlayCtx.translate(x,y);
+                    overlayCtx.rotate(Math.random());
+                    overlayCtx.drawImage(star, 0, 0, starSize, starSize);
+                    overlayCtx.restore();
                 }
-                data[(x + y * w) * 4 + 0] = color.r * 255;
-                data[(x + y * w) * 4 + 1] = color.g * 255;
-                data[(x + y * w) * 4 + 2] = color.g * 255;
-                data[(x + y * w) * 4 + 3] = 255;
+                vecPosition = (x + y * w) * 4;
+                data[vecPosition + 0] = color.r * 255;
+                data[vecPosition + 1] = color.g * 255;
+                data[vecPosition + 2] = color.g * 255;
+                data[vecPosition + 3] = 255;
             }
         }
 //        ctx.putImageData(imgdata, 0, 0);
@@ -285,7 +293,7 @@ var engy = (function(){
         var mapper = ['a', 'b', 'c'];
         for (var i in floorGeometry.faces){
             for (var j = 0; j < 3; j++) {
-//                floorGeometry.faces[i].vertexColors[j] = floorGeometry.colors[floorGeometry.faces[i][mapper[j]]];
+                floorGeometry.faces[i].vertexColors[j] = floorGeometry.colors[floorGeometry.faces[i][mapper[j]]];
             }
         }
 
@@ -293,8 +301,8 @@ var engy = (function(){
 
         var floor2 = new THREE.Mesh(floorGeometry, floorMaterial);
         floor2.position.z = -5000;
-        floor2.position.x = -500;
-        floor2.position.y = -500;
+        floor2.position.x = -6000;
+        floor2.position.y = -6000;
         floor2.rotation.z = -1;
         scene.add(floor2);
 
