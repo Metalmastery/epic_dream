@@ -140,7 +140,7 @@ function particles(){
                 currentProjectile.position.y += currentProjectile.speedY * time;// + Math.cos(currentProjectile.lifetime)*3;
 
 //                shaderFlame.fireByParams(currentProjectile.position.source.weapon ,currentProjectile.position.x, currentProjectile.position.y, 0, currentProjectile.lifetime >> 0,0,0);
-                shaderFlame.fireByParams(currentProjectile.position.source.weapon ,currentProjectile.position.x, currentProjectile.position.y, 0, currentProjectile.position.source.rotationAngle,0,0);
+                shaderFlame.fireByParams('bullet' ,currentProjectile.position.x, currentProjectile.position.y, 0, currentProjectile.position.source.rotationAngle,0,0);
 //                shaderFlame.fireByParams(currentProjectile.position.source.weapon ,currentProjectile.position.x, currentProjectile.position.y, 0, currentProjectile.position.source.rotationAngle + 0.5,0,0);
 //                shaderFlame.fireByParams(currentProjectile.position.source.weapon ,currentProjectile.position.x, currentProjectile.position.y, 0, currentProjectile.position.source.rotationAngle - 0.5,0,0);
             } else {

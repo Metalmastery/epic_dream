@@ -29,7 +29,7 @@ function bufferParticles(color){
         },
         jet2 : {
             color : Designer.colors.split[1],
-            size : 64
+            size : 32
         },
         rocket : {
             color : Designer.colors.complementary,

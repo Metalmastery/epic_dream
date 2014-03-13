@@ -76,6 +76,7 @@ function Beam (){
             positions[i * 3 + 4] = obj.point.y;
             if (obj.object.ship){
                 obj.object.ship.durability--;
+                obj.object.ship.target = shooter;
             }
         } else {
             positions[i * 3] = shooter.x;

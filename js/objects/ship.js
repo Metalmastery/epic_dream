@@ -56,7 +56,7 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
     this.rotationAngle = this.currentSpeedY = this.currentSpeedX = this.rotationSpeed = 0;
     this.speedLimit = 2;
 
-    this.weapon = 'bullet';
+    this.weapon = bullet;
 
     this.pressedKeys = {};
     this.attackTimer = 0;
@@ -69,7 +69,6 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
     switch (behavior) {
         // TODO implement filler-functions for every behaviour
         case 'ship':
-            this.weapon = 'base';
             this.speedFactor = 50;
             this.rotationSpeedFactor = 15 + Math.random()*15;
             this.attackRate = 10;
@@ -489,7 +488,7 @@ Ship.prototype.bindEvents = function(){
     console.log('bind events');
     var self = this;
     document.addEventListener('keydown', function(e){
-//        console.log(e.keyCode);
+        console.log(e.keyCode);
         self.pressedKeys[e.keyCode] = true;
         //self.keydownEvents[e.keyCode].call(self);
     });
@@ -531,8 +530,9 @@ Ship.prototype.keydownEvents = {
     },
     '32' : function(){
         if (this.attackTimer > this.attackRate){
+            this.weapon.fire(this);
 //            beam.fire(this);
-            rocket.fire(this);
+//            rocket.fire(this);
 //            bullet.fire(this);
 //            rocket.fireByParams(this, this.x, this.y, this.radius, this.rotationAngle + 0.2, this.currentSpeedX, this.currentSpeedY, this.target);
 //            rocket.fireByParams(this, this.x, this.y, this.radius, this.rotationAngle - 0.2, this.currentSpeedX, this.currentSpeedY, this.target);
@@ -569,6 +569,15 @@ Ship.prototype.keydownEvents = {
             this.rotationSpeed = 0;
             this.rotationAngle -= this.targetAngle;
         }
+    },
+    '49' : function(){
+        this.weapon = bullet;
+    },
+    '50' : function(){
+        this.weapon = beam;
+    },
+    '51' : function(){
+        this.weapon = rocket;
     }
 };
 
