@@ -179,7 +179,8 @@ var engy = (function(){
             starIntensity = 100,
             starSize = 32;
 
-        overlayCtx.fillStyle = '0x000000';
+//        overlayCtx.fillStyle = '6600ff';
+        overlayCtx.fillStyle = Designer.colors.complementary.clone().offsetHSL(0,0,-0.45).getHexString();
         overlayCtx.fillRect(0,0,overlay.width, overlay.height);
 
         var f1 = canvas.height / 4,
@@ -201,6 +202,7 @@ var engy = (function(){
         // 2 2 4
         // 4 2 2
         // 2 3 4
+        // 4 3 4
         var powers = [];
         for (var i = 0; i < 3; i++) {
             powers.push(1 + Math.random()*4>>0);
@@ -236,13 +238,14 @@ var engy = (function(){
 //                color.offsetHSL(0, color.getHSL().s < 0.3 ? -color.getHSL().s : -0.2, -0.1);
 //                color.offsetHSL(0, -color.getHSL().s/2, -0.1);
 //                color.offsetHSL(0, -1, 0);
-                hsl = color.getHSL();
+//                hsl = color.getHSL();
                 if (rnd2 > 0.99) {
 //
 //                    starSize = 0 + 48 * hsl.l*(1-Math.abs(hsl.s));
 //                    starSize = 1 + 48 * hsl.l * hsl.s;
 //                    starSize = Math.random() + 10 * (Math.abs(color.r) + Math.abs(color.g) + Math.abs(color.b));
-                    starSize = 1 + Math.random() + 10 * (color.r + color.g + color.b);
+//                    starSize = 5 + Math.random() + 10 * (color.r + color.g + color.b);
+                    starSize = 5 + 10 * (color.r + color.g + color.b);
                     overlayCtx.save();
                     overlayCtx.translate(x,y);
                     overlayCtx.rotate(Math.random());
