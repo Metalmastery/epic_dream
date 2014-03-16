@@ -203,10 +203,12 @@ var engy = (function(){
         // 4 2 2
         // 2 3 4
         // 4 3 4
-        var powers = [];
-        for (var i = 0; i < 3; i++) {
-            powers.push(1 + Math.random()*4>>0);
-        }
+//        var powers = [];
+//        for (var i = 0; i < 3; i++) {
+//            powers.push(1 + Math.random()*4>>0);
+//        }
+
+        var powers = [4,3,4];
 
         window.powers = powers;
 
@@ -231,8 +233,8 @@ var engy = (function(){
 
 //                color.setRGB(c2, c3, c1);
 //                color.setRGB(c3, c1, c2);
-
-                color.offsetHSL(baseHSL - color.getHSL().h, color.getHSL().s < 0 ? -color.getHSL().s : -1, 0/*1 - color.getHSL().l*/);
+                hsl = color.getHSL();
+                color.offsetHSL(baseHSL - hsl.h, hsl.s < 0 ? -hsl.s : -1, 0/*1 - color.getHSL().l*/);
 //                color.offsetHSL(0, color.getHSL().s < 0 ? -color.getHSL().s : -1, 0/*1 - color.getHSL().l*/);
 //                color.offsetHSL(baseHSL - color.getHSL().h, -( color.getHSL().s*color.getHSL().s), -0.1);
 //                color.offsetHSL(0, color.getHSL().s < 0.3 ? -color.getHSL().s : -0.2, -0.1);
