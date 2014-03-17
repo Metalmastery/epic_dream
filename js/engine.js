@@ -180,6 +180,7 @@ var engy = (function(){
             starSize = 32;
 
 //        overlayCtx.fillStyle = '6600ff';
+//        overlayCtx.fillStyle = Designer.colors.base.clone().offsetHSL(0,0,-0.48).getHexString();
         overlayCtx.fillStyle = Designer.colors.complementary.clone().offsetHSL(0,0,-0.45).getHexString();
         overlayCtx.fillRect(0,0,overlay.width, overlay.height);
 
@@ -193,8 +194,10 @@ var engy = (function(){
         var intensity, rnd, rnd2,
             vecPosition,
             baseHSL = Designer.colors.base.getHSL().h,
+//            baseHSL = Designer.colors.complementary.getHSL().h,
             color = new THREE.Color(),
-            hsl;
+            hsl,
+            intensityLimit = 0.80;
 
         //original powers - 3, 1, 4
         // 1 4 2
@@ -203,12 +206,14 @@ var engy = (function(){
         // 4 2 2
         // 2 3 4
         // 4 3 4
+        // 3 2 2
+        // 3 4 2
 //        var powers = [];
 //        for (var i = 0; i < 3; i++) {
 //            powers.push(1 + Math.random()*4>>0);
 //        }
 
-        var powers = [4,3,4];
+        var powers = [4,3,2];
 
         window.powers = powers;
 
@@ -223,7 +228,18 @@ var engy = (function(){
 
                 rnd = Math.random();
                 rnd2 = Math.random();
-                intensity = (r + g/4 + b/16 + d/32);
+//                intensity = (r + g/4 + b/16 + d/32);
+                intensity = (r + g/4 + b/16 + d/32) * intensityLimit;
+
+//                if (intensity < 0) {
+//                    intensity = - intensity;
+//                }
+
+//                if (intensity > intensityLimit) {
+//                    intensity = intensityLimit - (intensity - intensityLimit);
+//                }
+
+
 
                 var c1 = Math.pow(intensity,powers[0]),
                     c2 = Math.pow(intensity,powers[1]),
@@ -247,7 +263,7 @@ var engy = (function(){
 //                    starSize = 1 + 48 * hsl.l * hsl.s;
 //                    starSize = Math.random() + 10 * (Math.abs(color.r) + Math.abs(color.g) + Math.abs(color.b));
 //                    starSize = 5 + Math.random() + 10 * (color.r + color.g + color.b);
-                    starSize = 5 + 10 * (color.r + color.g + color.b);
+                    starSize = 1 + rnd * 5 + 10 * (color.r + color.g + color.b);
                     overlayCtx.save();
                     overlayCtx.translate(x,y);
                     overlayCtx.rotate(Math.random());

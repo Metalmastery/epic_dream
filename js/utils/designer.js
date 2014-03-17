@@ -75,9 +75,10 @@ var Designer = (function(){
 //    colors.base = (new THREE.Color()).setHSL(Math.random(), 1, 0.5);
     var rgb = [];
     rgb.push(Math.random() > 0.5 ? 1 : 0);
-    rgb.push(Math.random());
+    rgb.push(Math.random() * 0.5 + (1-rgb[0])*0.5 );
     rgb.push(1 - rgb[0]);
     colors.base = (new THREE.Color()).setRGB(rgb[0], rgb[1], rgb[2]);
+//    colors.base = (new THREE.Color()).setRGB(1, 0.17, 0);
 
     colors.triad.push(colors.base.clone());
     colors.triad.push(colors.base.clone().offsetHSL(0.33, 0, 0));

@@ -488,7 +488,7 @@ Ship.prototype.bindEvents = function(){
     console.log('bind events');
     var self = this;
     document.addEventListener('keydown', function(e){
-        console.log(e.keyCode);
+//        console.log(e.keyCode);
         self.pressedKeys[e.keyCode] = true;
         //self.keydownEvents[e.keyCode].call(self);
     });
