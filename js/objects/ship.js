@@ -246,6 +246,9 @@ Ship.prototype.avoid = function(delta){
     this.targetAngle = this.targetAngle - 4*(1 - this.distance*this.distance/40000) * (Math.abs(this.targetAngle)/this.targetAngle);
 };
 
+Ship.prototype.makeDecision = function(){
+
+};
 
 Ship.prototype.followTest = function(delta) {
     if (!this.active) {
