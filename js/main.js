@@ -44,7 +44,8 @@ function init(){
         }
     });
 
-    createEnemies(ship);
+//    createEnemies(ship);
+    createDuel(ship);
 //    createTwoFaction(ship);
 //    createFleet(ship);
 }
@@ -83,15 +84,37 @@ function createFleet(ship){
 
 }
 
+function createDuel(ship){
+    var dummy1 = new Ship(200, 200, 'follow', null);
+//        dummy = new Ship(distance, distance, 'follow', null);
+    dummy1.start();
+    engy.collider.add(dummy1);
+    engy.addToMainLoop(dummy1);
+
+    var dummy2 = new Ship(-200, 200, 'follow', null);
+//        dummy = new Ship(distance, distance, 'follow', null);
+    dummy2.start();
+    engy.collider.add(dummy2);
+    engy.addToMainLoop(dummy2);
+
+    setTimeout(function(){
+        dummy1.target = dummy2;
+        dummy2.target = dummy1;
+    }, 3000);
+
+    engy.attachCamera(dummy1);
+
+}
+
 function createEnemies(ship){
     var a = 0,
 //        distance = Math.random() * 1000 + 300,
-        distance = 50,
-        amount = 3,
+        distance = 200,
+        amount = 1,
         dummy;
     for (a = 0; a < 6.28; a += 6.28/amount){
 //        distance = 200 + Math.cos(a*3) * 100;
-        dummy = new Ship(distance * Math.cos(a), distance * Math.sin(a), 'follow', null);
+        dummy = new Ship(distance * Math.cos(a), distance * Math.sin(a), 'follow', ship);
 //        dummy = new Ship(distance, distance, 'follow', null);
         dummy.start();
         engy.collider.add(dummy);

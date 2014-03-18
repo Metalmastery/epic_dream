@@ -64,6 +64,12 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
 
     this.colliderAccept = bitMapper.generateMask(['ship', 'projectile']);
 
+    // TODO fsm params
+    this.avoidanceDistance = 100 + Math.random()* 200;
+    this.closeUpDistance = this.avoidanceDistance + Math.random()*200;
+    console.log('avoidanceDistance', this.avoidanceDistance);
+    console.log('closeUpDistance', this.closeUpDistance);
+
     var self = this;
 
     switch (behavior) {
@@ -100,7 +106,7 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
 
 
             // TODO add behaviours like : patrol, hold distance, free seek
-            this.speedFactor = 90 //+ Math.random()*30; // followAggressive, followAggressiveConstantSpeed & followSimple
+            this.speedFactor = 90 + Math.random()*30; // followAggressive, followAggressiveConstantSpeed & followSimple
 //            this.speedFactor = 200; // followSimpleConstantSpeed
             this.rotationSpeedFactor = 15 + Math.random()*15;
             this.target = behaviorOptions || null;
@@ -237,18 +243,22 @@ Ship.prototype.bullet = function(delta){
 
 Ship.prototype.brake = function(delta){
     this.targetAngle = Math.atan2(-this.currentSpeedX*this.sin + this.cos*this.currentSpeedY, -this.currentSpeedX*this.cos - this.sin*this.currentSpeedY);
-    if (this.targetAngle < 0.1) {
+    if (this.targetAngle < 0.05) {
         this.engineEnabled = true;
     }
 };
 
 Ship.prototype.avoid = function(delta){
-    this.targetAngle = this.targetAngle - 4*(1 - this.distance*this.distance/40000) * (Math.abs(this.targetAngle)/this.targetAngle);
+    this.targetAngle = this.targetAngle - 4*(1 - (this.distance*this.distance)/(this.avoidanceDistance*this.avoidanceDistance)) * (Math.abs(this.targetAngle)/(this.targetAngle));
+//    console.log('avoid', this.targetAngle);
+//    this.targetAngle = this.targetAngle - 3.14;
 };
 
 Ship.prototype.makeDecision = function(){
 
 };
+
+
 
 Ship.prototype.followTest = function(delta) {
     if (!this.active) {
@@ -283,6 +293,8 @@ Ship.prototype.followTest = function(delta) {
         projectileTime = this.distance / 10,
         vDeltaX, vDeltaY;
 
+    this.engineEnabled = false;
+
     this.cos = cos;
     this.sin = sin;
 
@@ -295,20 +307,20 @@ Ship.prototype.followTest = function(delta) {
     realTargetAngle = this.targetAngle;
 
 
-    if (this.distance < 200 && lastDistance > this.distance && this.avoidMode) {
+    if (this.distance < this.avoidanceDistance && lastDistance > this.distance && this.avoidMode) {
         this.avoid(delta);
         factor /= 2;
         force = this.avoidMode;
     }
 
 //    if (this.distance < 100 && !this.avoidMode || this.distance > 700 && lastDistance < this.distance && Math.abs(this.targetAngle) > 1 && (Math.abs(this.currentSpeedX) > 1 || Math.abs(this.currentSpeedY) > 1)) {
-    if (this.distance < 100 && !this.avoidMode || this.distance > 300 && Math.abs(vAngle - this.targetAngle) > 1) {
+    if (this.distance < this.avoidanceDistance && !this.avoidMode || this.distance > this.closeUpDistance && Math.abs(vAngle - this.targetAngle) > 1) {
         this.brake(delta);
         factor /= 3;
-        force = true;
+        force = this.engineEnabled;
     }
 
-    if (this.distance > 200 && Math.abs(this.targetAngle) < 0.2 || force) {
+    if (this.distance > this.avoidanceDistance /*&& Math.abs(this.targetAngle) < 0.2*/ || force) {
         vDeltaX = cos*delta/factor;
         vDeltaY = sin*delta/factor;
         this.currentSpeedX += vDeltaX*(Math.abs(this.currentSpeedX+2*vDeltaX) < this.speedLimit);
@@ -334,7 +346,7 @@ Ship.prototype.followTest = function(delta) {
         this.attackTimer = 0;
     }
 
-    window.log = ['FOLLOW', this.distance, this.targetAngle, vAngle].join(' ');
+//    window.log = ['FOLLOW', this.distance, this.targetAngle, vAngle].join(' ');
 };
 
 Ship.prototype.seek = function(delta){

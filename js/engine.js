@@ -80,8 +80,8 @@ var engy = (function(){
 //        setBackground();
         // TODO implement parallax background
 //        setBackground();
-//        gridHelper();
-        createNebula();
+        gridHelper();
+//        createNebula();
 
     }
 
