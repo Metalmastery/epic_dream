@@ -6,7 +6,9 @@ function rocketParticles2(){
 
     var mainScene,
         projectileLifetime = 1000,
-        projectileSpeed = 5,
+        framesBeforeSteer = 20,
+        projectileSpeed = 2,
+        projectileSpeedUp = 1,
         rotationFactor = 0.05,
         projectileRadius = 3,
         activeProjectiles = {},
@@ -232,7 +234,7 @@ function rocketParticles2(){
             }
             if (currentProjectile.lifetime>0 && !currentProjectile.collide) {
 
-                if (projectileLifetime - currentProjectile.lifetime > 20 && currentProjectile.target && currentProjectile.target.alive){
+                if (projectileLifetime - currentProjectile.lifetime > framesBeforeSteer && currentProjectile.target && currentProjectile.target.alive){
                     shaderFlame.fireByParams('rocket' , currentProjectile.x, currentProjectile.y, projectileRadius, currentProjectile.source.rotationAngle,0,0);
                     sin = Math.sin(currentProjectile.rotation);
                     cos = Math.cos(currentProjectile.rotation);
@@ -240,7 +242,7 @@ function rocketParticles2(){
                     diffY = currentProjectile.target.y - currentProjectile.y;
                     targetAngle = Math.atan2(diffY * cos - diffX * sin, diffX * cos + diffY * sin);
                     currentProjectile.rotation += targetAngle / Math.abs(targetAngle) * time * rotationFactor;
-                    currentProjectile.speedFactor = 1 + (Math.abs(targetAngle) < 0.5 ? 1 - Math.abs(targetAngle) : 0);
+                    currentProjectile.speedFactor = projectileSpeed + (Math.abs(targetAngle) < 1 ? projectileSpeedUp - Math.abs(targetAngle)*projectileSpeedUp : 0);
                 }
                 currentProjectile.speedX = Math.cos(currentProjectile.rotation) * projectileSpeed * time;
                 currentProjectile.speedY = Math.sin(currentProjectile.rotation) * projectileSpeed * time;
@@ -311,6 +313,8 @@ function rocketParticles2(){
     this.fire = fire;
     this.attachToScene = attachToScene;
     this.stop = stop;
+    this.speed = 999;
+    this.precisionAngle = 1;
     this.update = update;
     this.projectilesArray = pool;
     return this;

@@ -1,6 +1,7 @@
 var engy = (function(){
 
     var mainLoopObjects = [],
+        weapons = [],
         counter = 0,
         scene,
         camera,
@@ -336,8 +337,10 @@ var engy = (function(){
         var step = 100;
         var gridHelper = new THREE.GridHelper( size, step );
 
-        gridHelper.position = new THREE.Vector3( 0, 0, 0 );
+        gridHelper.position = new THREE.Vector3( 0, 0, -100 );
         gridHelper.rotation = new THREE.Euler( 1.57, 0, 0 );
+
+        console.log(gridHelper);
 
         scene.add( gridHelper );
     }
@@ -415,6 +418,7 @@ var engy = (function(){
         objects : mainLoopObjects,
         destroy : destroy,
         init : init,
+        weapons : weapons,
         scene : scene,
         camera : camera,
         renderer : renderer,

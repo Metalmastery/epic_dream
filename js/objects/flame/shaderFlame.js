@@ -191,7 +191,8 @@ function bufferParticles(color){
     function fire(shooter){
         var angle = shooter.rotationAngle,
             radius = shooter.radius || 0;
-        angle += 3.07 + Math.random()*0.14;
+//        angle += 3.07 + Math.random()*0.14;
+        angle += 3.14;
         var vecPosition = nextIndex * 3;
         var cos = Math.cos(angle), sin = Math.sin(angle);
         var selfSpeedX = cos*projectileSpeed,
@@ -228,8 +229,8 @@ function bufferParticles(color){
 
     function fireByParams(type, x, y, shipRadius, angle, vX, vY){
         var radius = shipRadius || 0,
-            angle = angle + 3.07 + Math.random()*0.14,
-//            angle = angle + 3.14,
+//            angle = angle + 3.07 + Math.random()*0.14,
+            angle = angle + 3.14,
             vecPosition = nextIndex * 3,
             type = type ? flameTypes[type] : flameTypes.jet,
             col = type.color,

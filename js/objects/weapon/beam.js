@@ -94,7 +94,8 @@ function Beam (){
     }
 
     this.fire = fire;
-    this.mesh = mesh;
+    this.speed = 99999;
+    this.precisionAngle = 0.05;
     this.update = update;
 
     engy.scene.add( mesh );

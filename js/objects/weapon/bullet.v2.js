@@ -181,6 +181,8 @@ function particles(){
     this.fire = fire;
     this.attachToScene = attachToScene;
     this.stop = stop;
+    this.speed = projectileSpeed;
+    this.precisionAngle = 0.1;
     this.update = update;
     this.projectilesArray = pool;
     return this;

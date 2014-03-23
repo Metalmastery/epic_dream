@@ -44,8 +44,8 @@ function init(){
         }
     });
 
-//    createEnemies(ship);
-    createDuel(ship);
+    createEnemies(ship);
+//    createDuel(ship);
 //    createTwoFaction(ship);
 //    createFleet(ship);
 }
@@ -92,7 +92,8 @@ function createDuel(ship){
     engy.addToMainLoop(dummy1);
 
     var dummy2 = new Ship(-200, 200, 'follow', null);
-//        dummy = new Ship(distance, distance, 'follow', null);
+    dummy2.avoidMode = false;
+    dummy2.avoidanceDistance = 0;
     dummy2.start();
     engy.collider.add(dummy2);
     engy.addToMainLoop(dummy2);
@@ -102,7 +103,7 @@ function createDuel(ship){
         dummy2.target = dummy1;
     }, 3000);
 
-    engy.attachCamera(dummy1);
+//    engy.attachCamera(dummy1);
 
 }
 
@@ -114,13 +115,21 @@ function createEnemies(ship){
         dummy;
     for (a = 0; a < 6.28; a += 6.28/amount){
 //        distance = 200 + Math.cos(a*3) * 100;
-        dummy = new Ship(distance * Math.cos(a), distance * Math.sin(a), 'follow', ship);
-//        dummy = new Ship(distance, distance, 'follow', null);
+//        dummy = new Ship(distance * Math.cos(a), distance * Math.sin(a), 'follow', ship);
+        dummy = new Ship(distance, distance, 'test', null);
         dummy.start();
         engy.collider.add(dummy);
         engy.addToMainLoop(dummy);
 
-        ship.target = dummy;
+        window.dummy = dummy;
+        dummy.currentSpeedX = 0.1;
+
+        setTimeout(function(){
+            dummy.applyBehavior = dummy.makeDecision;
+        }, 2000);
+
+
+//        ship.target = dummy;
     }
 }
 
@@ -193,18 +202,18 @@ function animate() {
 
     var cb = function(){
         requestAnimationFrame(cb);
-        logic();
+        //logic(); // inline
+        currentFtame = new Date();
+        delta = (currentFtame - lastFrame) / 16;
+        engy.update(delta);
+        engy.collider.testCollisions();
+        lastFrame = currentFtame;
         engy.renderer.render( engy.scene, engy.camera );
-//        engy.renderer.clear();
-//        engy.composer.render();
     };
 
     var logic = function(){
         currentFtame = new Date();
         delta = (currentFtame - lastFrame) / 16;
-//        if (delta > 2) {
-//            delta = 2;
-//        }
         engy.update(delta);
         engy.collider.testCollisions();
         lastFrame = currentFtame;
