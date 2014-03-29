@@ -76,8 +76,9 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
             this.bindEvents();
             this.colliderType = bitMapper.generateMask(['ship', 'player']);
 //            this.prepareRandomMeshShip();
-            this.geometry = Designer.torusShip();
+//            this.geometry = Designer.torusShip();
 //            this.geometry = Designer.multiNodeShip();
+            this.geometry = Designer.ringShip();
             window.ship = this;
             break;
         case 'ws':
