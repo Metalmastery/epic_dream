@@ -121,7 +121,7 @@ function audioCtrl (){
                     console.warn('!!!!! load', this);
                     musicAudioElements.push(this);
                     if (musicAudioElements.length == musicURLs.length){
-                        playMusic();
+//                        playMusic();
                     }
                 });
                 audio.src = url;

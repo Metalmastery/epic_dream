@@ -120,21 +120,22 @@ function createEnemies(ship){
     for (a = 0; a < 6.28; a += 6.28/amount){
         distance = 200 + Math.cos(a*3) * 100;
 //        dummy = new Ship(distance * Math.cos(a), distance * Math.sin(a), 'follow', ship);
-        dummy = new Ship(distance, -distance, 'test', null);
+        dummy = new Ship(0, 100, 'test', null);
         dummy.start();
         engy.collider.add(dummy);
         engy.addToMainLoop(dummy);
 
         window.dummy = dummy;
 //        dummy.currentSpeedX = 0.5;
-        dummy.currentSpeedY = -1;
+//        dummy.currentSpeedY = -1;
         dummy.rotationAngle = - 0;
 
-//        setTimeout(function(){
+        setTimeout(function(){
 //            dummy.applyBehavior = dummy.makeDecision;
-            dummy.target = {x : 300, y : 0};
+            dummy.target = {x : 0, y : 0};
             dummy.applyBehavior = dummy.reachPoint;
-//        }, 2000);
+//            dummy.applyBehavior = dummy.trackPoint;
+        }, 2000);
 
         engy.attachCamera(dummy);
 //        ship.target = dummy;
