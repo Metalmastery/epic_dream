@@ -235,6 +235,8 @@ function bufferParticles(color){
             type = type ? flameTypes[type] : flameTypes.jet,
             col = type.color,
             size = type.size;
+//        vX = 0;
+//        vY = 0;
         var cos = Math.cos(angle), sin = Math.sin(angle);
         var selfSpeedX = cos*projectileSpeed + vX,
             selfSpeedY = sin*projectileSpeed + vY,
