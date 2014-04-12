@@ -15,7 +15,7 @@ function init(){
 //    Flame.attachToScene(engy.scene);
     shaderFlame.attachToScene(engy.scene);
     rocket.attachToScene(engy.scene);
-    indicator.attachToScene(engy.scene);
+//    indicator.attachToScene(engy.scene);
 
     var ship = new Ship(0, 0, 'ship', null);
 //    indicator.add(ship);
@@ -29,6 +29,8 @@ function init(){
     engy.addToMainLoop(ship);
 //    engy.addToMainLoop(indicator);
     engy.collider.add(ship);
+
+    window.ship = ship;
 
 //    ambient();
 
@@ -115,7 +117,7 @@ function createEnemies(ship){
     var a = 0,
 //        distance = Math.random() * 1000 + 300,
         distance = 200,
-        amount = 1;
+        amount = 2;
 
     for (a = 0; a < 6.28; a += 6.28/amount){
         (function(){
@@ -124,19 +126,11 @@ function createEnemies(ship){
             engy.collider.add(dummy);
             engy.addToMainLoop(dummy);
             setTimeout(function(){
-//
-                window.dummy = dummy;
-//        dummy.currentSpeedX = 0.5;
-//        dummy.currentSpeedY = -1;
-//        dummy.rotationAngle = - 0;
+            window.dummy = dummy;
 
-//
-//            dummy.applyBehavior = dummy.makeDecision;
-//            dummy.target = {x : 0, y : 0};
-                dummy.target = ship;
-            dummy.applyBehavior = dummy.reachPoint;
-//                dummy.applyBehavior = dummy.attackTarget;
-//            dummy.applyBehavior = dummy.trackPoint;
+            dummy.target = ship;
+            dummy.lastBehavior = dummy.reachPoint;
+
             }, 2000);
             engy.attachCamera(dummy);
 //        ship.target = dummy;
@@ -212,7 +206,7 @@ function animate() {
         currentFtame = 0,
         delta = 0;
 
-    var cb = function(){
+    function cb(){
         requestAnimationFrame(cb);
         //logic(); // inline
         currentFtame = new Date();
@@ -221,15 +215,7 @@ function animate() {
         engy.collider.testCollisions();
         lastFrame = currentFtame;
         engy.renderer.render( engy.scene, engy.camera );
-    };
-
-    var logic = function(){
-        currentFtame = new Date();
-        delta = (currentFtame - lastFrame) / 16;
-        engy.update(delta);
-        engy.collider.testCollisions();
-        lastFrame = currentFtame;
-    };
+    }
 
     requestAnimationFrame(cb);
 }

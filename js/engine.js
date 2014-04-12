@@ -13,6 +13,8 @@ var engy = (function(){
         // TODO use next vars for slow-down and speed-up
         gameSpeedChangeSteps = 0,
         gameSpeedChangePerStep = 0,
+        keyboardMap = {},
+        mouseMap = {},
         bindings = {
             109 : function (e){
                 if (e.altKey){
@@ -47,6 +49,7 @@ var engy = (function(){
         renderer = new THREE.WebGLRenderer({
             antialias: true,
             preserveDrawingBuffer: true,
+            premultipliedAlpha : true,
             alpha : true,
             precision: 'lowp'
 //            devicePixelRation : 1
@@ -84,6 +87,29 @@ var engy = (function(){
         gridHelper();
 //        createNebula();
 
+        bindEvents();
+
+    }
+
+    function bindEvents(){
+        "use strict";
+        console.log('bind events');
+        document.addEventListener('keydown', function(e){
+//        console.log(e.keyCode);
+            keyboardMap[e.keyCode] = true;
+            //self.keydownEvents[e.keyCode].call(self);
+        });
+        document.addEventListener('keyup', function(e){
+            keyboardMap[e.keyCode] = false;
+            //self.keydownEvents[e.keyCode].call(self);
+        });
+        document.body.addEventListener('mousemove', function(e){
+//        console.log(e);
+            mouseMap.mouseX = e.x;
+            mouseMap.mouseY = e.y;
+//        self.pressedKeys['77'] = true;
+            mouseMap.moving = true;
+        })
     }
 
     function createEnemy(ship){
@@ -424,7 +450,11 @@ var engy = (function(){
         renderer : renderer,
         attachCamera : attachCamera,
         setGameSpeedImmediately : setGameSpeedImmediately,
-        setGameSpeedGradually : setGameSpeedGradually
+        setGameSpeedGradually : setGameSpeedGradually,
+        controls : {
+            keyboardMap : keyboardMap,
+            mouseMap : mouseMap
+        }
     }
 
 })();

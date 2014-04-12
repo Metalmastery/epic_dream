@@ -3,6 +3,20 @@ var bounds = {
     height : window.innerHeight
 };
 
+var shipTypes = {
+    ship : {
+        attackRate : 10,
+        geometryType : 'torusShip',
+        desiredBehavior : 'applyPressedKeys',
+//        desiredBehavior : 'idle',
+        colliderType : bitMapper.generateMask(['ship', 'bot'])
+
+    },
+    test : {
+        colliderType : bitMapper.generateMask(['ship', 'bot'])
+    }
+};
+
 function Ship() {
     "use strict";
 
@@ -23,7 +37,6 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
 
     this.idleTimer = 0;
     this.idleLimit = 200;
-    this.lastBehavior = this.idle;
 
     //TODO channel registration for every member
 
@@ -39,22 +52,23 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
 
     this.alive = true;
 
-    this.lastFrame = new Date();
     this.speedFactor = 5 + Math.random()*60;
 //    this.rotationSpeedFactor = 1 + Math.random()*20;
+    this.speedLimit = 2 - this.speedFactor / 60;
+    this.speedLimitSquared = Math.pow(this.speedLimit, 2);
     this.rotationSpeedFactor = 30;
     this.rotationAcceleration = 0.0001 + Math.random()*0.005;
 
     this.rotationAngle = this.currentSpeedY = this.currentSpeedX = this.rotationSpeed = 0;
-    this.speedLimit = 2;
-    this.speedLimitSquared = Math.pow(this.speedLimit, 2);
+
 
     // TODO GLOBAL CONTROLS FOR SHIP
     this.engineEnabled = false;
     this.enginePower = 1;
     this.rotationEnabled = true;
 
-
+    this.score = 0;
+    this.rank = 0;
 
     // TODO implement damage, durability indication
     // TODO can compute the size of the indication box with boundingSphere
@@ -81,66 +95,51 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
     this.avoidanceDistance = 200 + Math.random()* 200;
     this.avoidanceAngle = 1 + Math.random() * 2;
     this.closeUpDistance = this.avoidanceDistance + Math.random()*300;
-    console.log('avoidanceDistance', this.avoidanceDistance);
-    console.log('closeUpDistance', this.closeUpDistance);
+//    console.log('avoidanceDistance', this.avoidanceDistance);
+//    console.log('closeUpDistance', this.closeUpDistance);
+
+    this.geometryType = 'basicShip';
+//    this.geometryType = 'simple2DShip';
+    this.desiredBehavior = 'idle';
+
+    this.colliderType = bitMapper.generateMask(['ship']);
 
     var self = this;
 
-    switch (behavior) {
-        // TODO implement filler-functions for every behaviour
-        case 'ship':
+//    switch (behavior) {
+//        // TODO implement filler-functions for every behaviour
+//        case 'ship':
+//
+//            this.attackRate = 10;
+//            this.desiredBehavior = 'applyPressedKeys';
+//            this.bindEvents();
+//            this.colliderType = bitMapper.generateMask(['ship', 'player']);
+//            this.geometryType = 'torusShip';
 
-            this.attackRate = 10;
-            this.applyBehavior = this.applyPressedKeys;
-            this.bindEvents();
-            this.colliderType = bitMapper.generateMask(['ship', 'player']);
-//            this.prepareRandomMeshShip();
-            this.geometry = Designer.torusShip();
-//            this.geometry = Designer.multiNodeShip();
-            window.ship = this;
-            break;
-        case 'test':
-            this.applyBehavior = this.applyBehavior;
-            this.colliderType = bitMapper.generateMask(['ship', 'bot']);
-            this.geometry = Designer.basicShip();
-            break;
-        case 'follow':
-            this.faction = 2;
-            this.rotationAngle = Math.random()*6.28;
-            // TODO implement pre-orientation function
-            this.applyBehavior = this.followTest;
+//            break;
+//        case 'test':
+//
+//            break;
+//        default:
+//            this.applyBehavior = this.bullet;
+//    }
 
-            // TODO add behaviours like : patrol, hold distance, free seek
+    this.patchWithType(behavior);
 
-            this.target = behaviorOptions || null;
-            // TODO implement LOCATOR and target capture/loose
-
-            this.colliderType = bitMapper.generateMask(['ship', 'bot']);
-
-            this.distance = 0;
-            this.targetAngle = 0;
-            this.geometry = Designer.basicShip();
-            break;
-        case 'follow2':
-            this.faction = 3;
-            this.rotationAngle = Math.random()*6.28;
-            this.applyBehavior = this.followAggressiveConstantSpeed;
-            this.speedFactor = 2 + Math.random(); // followAggressive, followAggressiveConstantSpeed & followSimple
-            this.rotationSpeedFactor = 10;
-            this.target = behaviorOptions || this;
-            this.colliderType = bitMapper.generateMask(['ship', 'bot']);
-            this.colliderAccept = bitMapper.generateMask(['player', 'projectile']);
-            this.distance = 0;
-            this.targetAngle = 0;
-            this.geometry = Designer.basicShip();
-            break;
-        default :
-            this.applyBehavior = this.bullet;
-    }
+    this.geometry = Designer.giveMe(this.geometryType);
     this.geometry.ship = this;
     this.geometry.scale.multiplyScalar(2);
 
+    this.applyBehavior = this[this.desiredBehavior];
     this.lastBehavior = this.applyBehavior;
+};
+
+Ship.prototype.patchWithType = function(type){
+    if (type && shipTypes[type]){
+        for (var i in shipTypes[type]) {
+            this[i] = shipTypes[type][i];
+        }
+    }
 };
 
 Ship.prototype.applyWebSockets = function(data){
@@ -156,18 +155,18 @@ Ship.prototype.applyWebSockets = function(data){
             this.keydownEvents[this.pressedKeys[i]].apply(this, [data]);
         }
     }
-}
+};
 
 Ship.prototype.applyPressedKeys = function(delta){
     //console.log(this.pressedKeys);
-    var codes = '[',
-        flag = false;
-    for (var i in this.pressedKeys) {
-        if (this.pressedKeys[i] && this.keydownEvents[i]) {
+    this.engineEnabled = false;
+    for (var i in this.keydownEvents) {
+        if (engy.controls.keyboardMap[i]) {
             this.keydownEvents[i].apply(this, [delta]);
-            codes += i + ',';
-            flag = true;
         }
+    }
+    if (engy.controls.mouseMap.moving){
+        this.keydownEvents['101'].apply(this, [delta]);
     }
 };
 
@@ -178,52 +177,49 @@ Ship.prototype.start = function(){
 
     var self = this;
     self.running = true;
-    self.update = function(time){
-//            if (self.target && !self.target.alive){
-//                self.target = null;
-//            }
 
-        if (self.running) {
-            if (self.collide && self.collide.source != self){
-                // TODO implements collision checking and reactions
+};
 
-                if (bitMapper.is('ship', self.collide)/* && self.collide.fleet.uniq != self.fleet.uniq*/) {
-//                        self.stop();
-                }
+Ship.prototype.update = function(time){
+    if (this.running) {
+        if (this.collide && this.collide.source != this){
+            // TODO implements collision checking and reactions
 
-                if (bitMapper.is('projectile', self.collide)/* && self.collide.source.fleet.uniq != self.fleet.uniq*/) {
-                    self.durability--;
+            if (bitMapper.is('ship', this.collide)/* && this.collide.fleet.uniq != this.fleet.uniq*/) {
+//                        this.stop();
+            }
 
-                    self.setIdle();
+            if (bitMapper.is('projectile', this.collide)/* && this.collide.source.fleet.uniq != this.fleet.uniq*/) {
+                this.durability--;
 
-                    // TODO mutual targeting
-                    self.target = self.collide.source;
-                    self.collide.source.target = self;
+                this.setIdle();
 
-                    if (self.fleet){
-                        if (!self.collide.source.target){
-                            self.collide.source.fleet.reportTarget(self.collide.source, self);
-                        }
-                        console.info('UNDER ATTACK', self.collide.source);
-                        if (!self.target) {
-                            self.fleet.reportTarget(self, self.collide.source);
-                        }
+                // TODO mutual targeting
+                this.target = this.collide.source;
+                this.collide.source.target = this;
+
+                if (this.fleet){
+                    if (!this.collide.source.target){
+                        this.collide.source.fleet.reportTarget(this.collide.source, this);
+                    }
+                    console.info('UNDER ATTACK', this.collide.source);
+                    if (!this.target) {
+                        this.fleet.reportTarget(this, this.collide.source);
                     }
                 }
+            }
 
-                self.collide = false;
-            }
-            if (self.durability < 0 ) {
-                self.stop();
-            }
-            self.prepareData(time);
-            self.applyBehavior(time);
-            self.action(time);
-        } else {
-            self.stop();
+            this.collide = false;
         }
-
-    };
+        if (this.durability < 0 ) {
+            this.stop();
+        }
+        this.prepareData(time);
+        this.applyBehavior(time);
+        this.action(time);
+    } else {
+        this.stop();
+    }
 };
 
 Ship.prototype.stop = function(){
@@ -252,12 +248,12 @@ Ship.prototype.stopBehavior = function(delta){
 Ship.prototype.prepareData = function(delta){
     this.sin = Math.sin(this.rotationAngle);
     this.cos = Math.cos(this.rotationAngle);
-    this.velocityAngle = Math.atan2(this.currentSpeedX*this.sin + this.cos*this.currentSpeedY, this.currentSpeedX* this.cos - this.sin*this.currentSpeedY);
+//    this.velocityAngle = Math.atan2(this.currentSpeedX*this.sin + this.cos*this.currentSpeedY, this.currentSpeedX* this.cos - this.sin*this.currentSpeedY);
     this.velocity = Math.sqrt(Math.pow(this.currentSpeedX, 2) + Math.pow(this.currentSpeedY, 2));
 };
 
 Ship.prototype.idle = function(delta){
-    console.log('switch to IDLE');
+//    console.log('switch to IDLE');
     this.rotationEnabled = false;
     this.engineEnabled = false;
     this.idleTimer += delta;
@@ -334,14 +330,9 @@ Ship.prototype.avoid = function(delta){
 };
 
 Ship.prototype.makeDecision = function(){
-    this.target = {
-        x : 200 - Math.random()*400,
-        y : 200 - Math.random()*400
-    };
-    console.log(this.target);
 
-    ship.x = this.target.x;
-    ship.y = this.target.y;
+    ship.x = 200 - Math.random()*400;
+    ship.y = 200 - Math.random()*400;
 
     this.target = ship;
 
@@ -362,25 +353,25 @@ Ship.prototype.rotate = function(delta){
 };
 
 Ship.prototype.move = function(delta){
-    if (this.engineEnabled) {
-        var sin = this.sin,
-            cos = this.cos,
-            thrust = this.enginePower*delta/this.speedFactor,
-            diffX = thrust * cos,
-            diffY = thrust * sin,
-            condition = (Math.pow(this.currentSpeedX + diffX,2) + Math.pow(this.currentSpeedY + diffY,2) < this.speedLimitSquared);
-//            condition = 1;
-        if (condition){
-            this.currentSpeedX += diffX * condition;
-            this.currentSpeedY += diffY * condition;
-        } else {
-            this.currentSpeedX = (this.currentSpeedX + diffX) / (this.speedLimit + thrust) * this.speedLimit;
-            this.currentSpeedY = (this.currentSpeedY + diffY) / (this.speedLimit + thrust) * this.speedLimit;
-        }
-        this.flame.fireByParams('jet2',this.x, this.y, this.radius, this.rotationAngle,this.currentSpeedX,this.currentSpeedY);
-//        this.flame.fireByParams('jet2',this.x, this.y, this.radius, this.rotationAngle,0,0);
+
+    if (!this.engineEnabled) {
+        return false;
     }
-    this.enginePower = 1;
+    var sin = this.sin,
+        cos = this.cos,
+        thrust = this.enginePower*delta/this.speedFactor,
+        diffX = thrust * cos,
+        diffY = thrust * sin,
+        condition = (Math.pow(this.currentSpeedX + diffX,2) + Math.pow(this.currentSpeedY + diffY,2) < this.speedLimitSquared);
+//            condition = 1;
+    if (condition){
+        this.currentSpeedX += diffX * condition;
+        this.currentSpeedY += diffY * condition;
+    } else {
+        this.currentSpeedX = (this.currentSpeedX + diffX) / (this.speedLimit + thrust) * this.speedLimit;
+        this.currentSpeedY = (this.currentSpeedY + diffY) / (this.speedLimit + thrust) * this.speedLimit;
+    }
+    this.flame.fireByParams('jet2',this.x, this.y, this.radius, 0, this.currentSpeedX, this.currentSpeedY, this.cos, this.sin);
 };
 
 Ship.prototype.attack = function(delta){
@@ -393,17 +384,18 @@ Ship.prototype.attack = function(delta){
 
 Ship.prototype.reachPoint = function(delta){
 //    console.log(this.target);
-    console.log('switch to REACH POINT');
+//    console.log('switch to REACH POINT');
     this.engineEnabled = false;
     var sin = this.sin,
         cos = this.cos,
-        k = (1 - this.distance / 500),
-//        k = this.targetAngle / this.velocityAngle < 0 ? (1 - this.distance / 500) : 0,
+        k = 0,
+//        k = this.velocity > this.speedLimit / 2 ? (1 - this.distance / 500) : 0,
         calcTime;
     var distX = this.target.x - this.x,
         distY = this.target.y - this.y;
     this.distance = Math.sqrt(Math.pow(distX,2) + Math.pow(distY,2));
     if (this.distance < 500){
+        k = (1 - this.distance / 500);
         calcTime = this.distance / (this.velocity + 0.00001);
         distX -= this.currentSpeedX * calcTime * k;
         distY -= this.currentSpeedY * calcTime * k;
@@ -456,16 +448,18 @@ Ship.prototype.track = function(delta){
         a = this.rotationAcceleration,
         limitFlag,
         diff;
-    fullStopTime = Math.abs((this.rotationSpeed + a) / a);
+//    fullStopTime = Math.abs((this.rotationSpeed + a) / a);
+    fullStopTime = Math.abs((this.rotationSpeed) / a);
     reachTargetAngleTime = (this.targetAngle / (this.rotationSpeed + 0.0000001));
-    if (reachTargetAngleTime > 0 && fullStopTime >= reachTargetAngleTime) {
+    if (reachTargetAngleTime >= 0 && fullStopTime >= reachTargetAngleTime) {
         a = -a;
     }
     diff = this.targetAngle / Math.abs(this.targetAngle + 0.0000001) * a * delta;
     limitFlag = Math.abs(this.rotationSpeed + diff) < 0.1;
     this.rotationSpeed += diff * (+limitFlag);
 
-    if (Math.abs(this.targetAngle) < a * 2 && Math.abs(this.rotationSpeed) < a * 2) {
+//    if (Math.abs(this.targetAngle) < a * 2 && Math.abs(this.rotationSpeed) < a * 2) {
+    if (Math.abs(this.targetAngle) < 0.01 && Math.abs(this.rotationSpeed) < a * 2) {
         this.rotationSpeed = 0;
     }
 };
@@ -726,48 +720,25 @@ Ship.prototype.followSimpleConstantSpeed = function(delta) {
     //console.log('FOLLOW', distance, angle, delta);
 };
 
-
-Ship.prototype.bindEvents = function(){
-    "use strict";
-    console.log('bind events');
-    var self = this;
-    document.addEventListener('keydown', function(e){
-//        console.log(e.keyCode);
-        self.pressedKeys[e.keyCode] = true;
-        //self.keydownEvents[e.keyCode].call(self);
-    });
-    document.addEventListener('keyup', function(e){
-        self.pressedKeys[e.keyCode] = false;
-        //self.keydownEvents[e.keyCode].call(self);
-    });
-    document.body.addEventListener('mousemove', function(e){
-//        console.log(e);
-        self.mouseX = e.x;
-        self.mouseY = e.y;
-//        self.pressedKeys['77'] = true;
-        self.pressedKeys['101'] = true;
-    })
-};
-
 Ship.prototype.keydownEvents = {
     '87' : function(time){
-        var deltaX = Math.cos(this.rotationAngle)*time/this.speedFactor,
-            deltaY = Math.sin(this.rotationAngle)*time/this.speedFactor;
-//        if (Math.pow(this.currentSpeedX + deltaX, 2) + Math.pow(this.currentSpeedY + deltaY, 2) < 36){
-            this.currentSpeedX += deltaX;
-            this.currentSpeedY += deltaY;
-//        }
-        this.flame.fireByParams('jet',this.x, this.y, this.radius, this.rotationAngle,this.currentSpeedX,this.currentSpeedY);
+        this.engineEnabled = true;
     },
     '83' : function(time){
 //        this.currentSpeedX = this.currentSpeedX - Math.cos(this.rotationAngle)*time/this.speedFactor;
 //        this.currentSpeedY = this.currentSpeedY - Math.sin(this.rotationAngle)*time/this.speedFactor;
     },
     '65' : function(time){
-        this.rotationSpeed += time/this.rotationSpeedFactor;
+        var diff = this.rotationSpeed + this.rotationAcceleration * time;
+        if (Math.abs(diff) < 0.1){
+            this.rotationSpeed = diff;
+        }
     },
     '68' : function(time){
-        this.rotationSpeed -= time/this.rotationSpeedFactor;
+        var diff = this.rotationSpeed - this.rotationAcceleration * time;
+        if (Math.abs(diff) < 0.1){
+            this.rotationSpeed = diff;
+        }
     },
     '80' : function(){
         this.currentSpeedX = this.currentSpeedY = this.rotationSpeed = 0;
@@ -777,7 +748,6 @@ Ship.prototype.keydownEvents = {
             this.weapon.fire(this);
             this.attackTimer = 0;
         }
-        this.pressedKeys['80'] = false;
     },
     '77' : function(){
         return false;
@@ -796,8 +766,8 @@ Ship.prototype.keydownEvents = {
     '101': function(time){
         var halfWidth = bounds.width >> 1,
             halfHeight = bounds.height >> 1,
-            distX = this.mouseX - halfWidth,
-            distY = - this.mouseY + halfHeight,
+            distX = engy.controls.mouseMap.mouseX - halfWidth,
+            distY = - engy.controls.mouseMap.mouseY + halfHeight,
             sin = this.sin,
             cos = this.cos;
         this.targetAngle = Math.atan2( -distX * sin + cos * distY, distX * cos + sin * distY);
@@ -815,11 +785,10 @@ Ship.prototype.keydownEvents = {
 
 Ship.prototype.action = function(time){
 
-//    this.rotate(time);
     this.track(time);
     this.move(time);
 
-    this.rotationAngle += this.rotationSpeed;
+    this.rotationAngle += this.rotationSpeed * time;
 
     if (this.rotationAngle < -3.14){
         this.rotationAngle += 6.28;

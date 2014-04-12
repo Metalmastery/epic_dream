@@ -1,6 +1,9 @@
 var Designer = (function(){
     var self = {};
     var materials = {
+        lineBasic : function(){
+
+        },
         lambertBasic : function(color, map, lightmap){
             var color = color.clone().offsetHSL(0,0,0.3);
             return new THREE.MeshLambertMaterial( {
@@ -192,12 +195,13 @@ var Designer = (function(){
         geometry.vertices.push(new THREE.Vector3( 0, 0, 0 ) );
         geometry.vertices.push(new THREE.Vector3( -5, -5, 0 ) );
         geometry.vertices.push(new THREE.Vector3( 10, 0, 0 ) );
-
         var material = new THREE.LineBasicMaterial({
 //            vertexColors: true,
-            color : new THREE.Color(self.shipColor)
+            color : colors.split[1].clone()
         });
+
         geometry = new THREE.Line( geometry, material, 0);
+        geometry.rotation.order = 'ZYX';
         return geometry;
     }
 
@@ -269,7 +273,7 @@ var Designer = (function(){
         _calculateUVsAfterCSG(geometry);
 
         // TODO adjust colors in material
-//        var material = materials.phongWithAmbient(color, texture);
+//        var material = materials.phongWithAmbient(color, floorTexture);
         var material = materials.lambertBasic(color, floorTexture, lightmap);
 
         geometry = new THREE.Mesh(geometry, material);
@@ -379,7 +383,14 @@ var Designer = (function(){
 
     }
 
+    function giveMe(itemName){
+        if (typeof this[itemName] == 'function'){
+            return this[itemName]();
+        }
+    }
+
     return {
+        giveMe : giveMe,
         torusShip : torusShip,
         basicShip : basicShip,
         simple2DShip : simple2DShip,

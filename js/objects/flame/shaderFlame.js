@@ -227,17 +227,24 @@ function bufferParticles(color){
         }
     }
 
-    function fireByParams(type, x, y, shipRadius, angle, vX, vY){
+    function fireByParams(type, x, y, shipRadius, angle, vX, vY, cos, sin){
         var radius = shipRadius || 0,
 //            angle = angle + 3.07 + Math.random()*0.14,
-            angle = angle + 3.14,
+//            angle = angle + 3.14,
             vecPosition = nextIndex * 3,
             type = type ? flameTypes[type] : flameTypes.jet,
             col = type.color,
             size = type.size;
 //        vX = 0;
 //        vY = 0;
-        var cos = Math.cos(angle), sin = Math.sin(angle);
+        if (angle){
+            cos = Math.cos(angle);
+            sin = Math.sin(angle);
+        } else {
+            cos = - cos;
+            sin = - sin;
+        }
+//        console.log(cos, sin);
         var selfSpeedX = cos*projectileSpeed + vX,
             selfSpeedY = sin*projectileSpeed + vY,
 
