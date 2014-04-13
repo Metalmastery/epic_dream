@@ -130,6 +130,7 @@ function createEnemies(ship){
 
             dummy.target = ship;
             dummy.lastBehavior = dummy.reachPoint;
+//            dummy.lastBehavior = dummy.follow;
 
             }, 2000);
             engy.attachCamera(dummy);
