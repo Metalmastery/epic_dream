@@ -15,7 +15,7 @@ function init(){
 //    Flame.attachToScene(engy.scene);
     shaderFlame.attachToScene(engy.scene);
     rocket.attachToScene(engy.scene);
-//    indicator.attachToScene(engy.scene);
+    indicator.attachToScene(engy.scene);
 
     var ship = new Ship(0, 0, 'ship', null);
 //    indicator.add(ship);
@@ -117,7 +117,7 @@ function createEnemies(ship){
     var a = 0,
 //        distance = Math.random() * 1000 + 300,
         distance = 200,
-        amount = 2;
+        amount = 1;
 
     for (a = 0; a < 6.28; a += 6.28/amount){
         (function(){
@@ -129,8 +129,8 @@ function createEnemies(ship){
             window.dummy = dummy;
 
             dummy.target = ship;
+//            dummy.lastBehavior = dummy.immobile;
             dummy.lastBehavior = dummy.reachPoint;
-//            dummy.lastBehavior = dummy.follow;
 
             }, 2000);
             engy.attachCamera(dummy);

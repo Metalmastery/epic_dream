@@ -9,7 +9,9 @@ var shipTypes = {
         geometryType : 'torusShip',
         desiredBehavior : 'applyPressedKeys',
 //        desiredBehavior : 'idle',
-        colliderType : bitMapper.generateMask(['ship', 'bot'])
+        colliderType : bitMapper.generateMask(['ship', 'bot']),
+        totalDurability : 20000,
+        durability : 20000
 
     },
     test : {
@@ -25,7 +27,7 @@ function Ship() {
     return this;
 }
 
-Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
+Ship.prototype.init = function(startX, startY, type, behaviorOptions) {
     "use strict";
     // TODO implement ship construction from options object
     this.geometry = null;
@@ -65,6 +67,7 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
     this.speedLimitSquared = Math.pow(this.speedLimit, 2);
     this.rotationSpeedFactor = 30;
     this.rotationAcceleration = 0.0001 + Math.random()*0.005;
+//    this.targetAngleAccuracy = 0.01 + Math.random();
     this.targetAngleAccuracy = 1;
 
     this.linearAcceleration = this.enginePower / this.speedFactor;
@@ -104,13 +107,12 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
 
     this.geometryType = 'basicShip';
 //    this.geometryType = 'simple2DShip';
+//    this.geometryType = 'multiNodeShip';
     this.desiredBehavior = 'idle';
 
     this.colliderType = bitMapper.generateMask(['ship']);
 
-    var self = this;
-
-    this.patchWithType(behavior);
+    this.patchWithType(type);
 
     this.geometry = Designer.giveMe(this.geometryType);
     this.geometry.ship = this;
@@ -383,9 +385,13 @@ Ship.prototype.reachPoint = function(delta){
     this.distance = Math.sqrt(Math.pow(distX,2) + Math.pow(distY,2));
     if (this.distance < 500){
         k = (1 - this.distance / 500);
+
+//        calcTime = Math.min(this.distance, this.distance / (this.velocity + 0.00001));
         calcTime = this.distance / (this.velocity + 0.00001);
         distX -= this.currentSpeedX * calcTime * k;
         distY -= this.currentSpeedY * calcTime * k;
+//        distX /= 2;
+//        distY /= 2;
     }
 //    if (this.distance < this.avoidanceDistance ){
 //        this.applyBehavior = this.avoid;
@@ -395,9 +401,9 @@ Ship.prototype.reachPoint = function(delta){
 //        this.applyBehavior = this.brake;
 //        console.log('switch to BRAKE');
 //    } else
-    if (this.distance < 200){
-        this.applyBehavior = this.follow;
-//        this.applyBehavior = this.makeDecision;
+    if (this.distance < 30){
+//        this.applyBehavior = this.follow;
+        this.applyBehavior = this.makeDecision;
 //        this.applyBehavior = this.brake;
     } else {
         this.targetAngle = Math.atan2( -distX * sin + cos * distY, distX * cos + sin * distY);
@@ -423,17 +429,43 @@ Ship.prototype.follow = function(){
     var desiredVX = this.currentSpeedX - this.target.currentSpeedX,
         desiredVY = this.currentSpeedY - this.target.currentSpeedY;
 
+    if (Math.abs(desiredVX) < this.linearAcceleration && Math.abs(desiredVY) < this.linearAcceleration){
+        return false;
+    }
+
+
     this.targetAngle = Math.atan2(desiredVX*this.sin - this.cos*desiredVY, -desiredVX*this.cos - this.sin*desiredVX);
     this.targetAngleAccuracy = this.rotationAcceleration * 2;
-    if (Math.abs(this.targetAngle) < this.targetAngleAccuracy && (Math.abs(desiredVX) > this.linearAcceleration || Math.abs(desiredVY) > this.linearAcceleration) ){
+    if (Math.abs(this.targetAngle) < this.targetAngleAccuracy){
         this.engineEnabled = true;
     } else {
+//        this.targetAngle = 0;
         this.engineEnabled = false;
+//        this.applyBehavior = this.mimeAngle;
     }
 
     if (this.distance > 200) {
+        this.targetAngleAccuracy = 1;
         this.applyBehavior = this.reachPoint;
     }
+};
+
+Ship.prototype.immobile = function(){
+    this.currentSpeedX = 0;
+    this.currentSpeedY = 0;
+    this.engineEnabled = false;
+    var distX = this.target.x - this.x,
+        distY = this.target.y - this.y;
+
+    this.distance = Math.sqrt(Math.pow(distX,2) + Math.pow(distY,2));
+
+    var k = (1 - this.distance / 500),
+        calcTime = this.distance / (this.target.velocity + 0.00001);
+    k = 1;
+    distX += this.target.currentSpeedX * calcTime * k;
+    distY += this.target.currentSpeedY * calcTime * k;
+
+    this.targetAngle = Math.atan2( -distX * this.sin + this.cos * distY, distX * this.cos + this.sin * distY);
 };
 
 Ship.prototype.attackTarget = function(delta){
@@ -457,7 +489,7 @@ Ship.prototype.attackTarget = function(delta){
 };
 
 Ship.prototype.track = function(delta){
-    if (!this.rotationEnabled){
+    if (!this.rotationEnabled || Math.abs(this.targetAngle) < this.rotationAcceleration){
         return false;
     }
     var fullStopTime,
@@ -465,18 +497,19 @@ Ship.prototype.track = function(delta){
         a = this.rotationAcceleration,
         limitFlag,
         diff;
-//    fullStopTime = Math.abs((this.rotationSpeed + a) / a);
-    fullStopTime = Math.abs((this.rotationSpeed) / a);
+
+    fullStopTime = Math.abs(this.rotationSpeed / a);
     reachTargetAngleTime = (this.targetAngle / (this.rotationSpeed + 0.0000001));
-    if (reachTargetAngleTime > 0 && fullStopTime > reachTargetAngleTime) {
+    if (reachTargetAngleTime > 0 && fullStopTime > reachTargetAngleTime){
         a = -a;
     }
-    diff = this.targetAngle / Math.abs(this.targetAngle + 0.0000001) * a * delta;
-    limitFlag = Math.abs(this.rotationSpeed + diff) < 0.1;
+    diff = (this.targetAngle / Math.abs(this.targetAngle + 0.0000001)) * a * delta;
+    limitFlag = Math.abs(this.rotationSpeed + diff) < 0.2 && Math.abs(this.targetAngle + this.rotationSpeed) > this.rotationAcceleration;
+//    limitFlag = b || (Math.abs(this.rotationSpeed + diff) < Math.abs(this.targetAngle / 30) && Math.abs(this.targetAngle) > this.rotationAcceleration);
     this.rotationSpeed += diff * (+limitFlag);
 
 //    if (Math.abs(this.targetAngle) < a * 2 && Math.abs(this.rotationSpeed) < a * 2) {
-    if (Math.abs(this.targetAngle) < 0.01 && Math.abs(this.rotationSpeed) < a * 2) {
+    if (Math.abs(this.targetAngle) < 0.01 && Math.abs(this.rotationSpeed) < this.rotationAcceleration * 2) {
         this.rotationSpeed = 0;
     }
 };
