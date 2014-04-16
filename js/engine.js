@@ -116,7 +116,7 @@ var engy = (function(){
         var a = Math.random() * Math.PI * 2,
 //            distance = Math.random() * 100 + 300,
             distance = 300,
-            dummy = new Ship(distance * Math.cos(a), distance * Math.sin(a), 'follow2', ship);
+            dummy = new Ship(distance * Math.cos(a), distance * Math.sin(a), 'test', ship);
             dummy.start();
             collider.add(dummy);
             addToMainLoop(dummy);

@@ -17,7 +17,7 @@ function init(){
     rocket.attachToScene(engy.scene);
     indicator.attachToScene(engy.scene);
 
-    var ship = new Ship(0, 0, 'ship', null);
+    var ship = new Ship(0, -500, 'ship', null);
 //    indicator.add(ship);
     engy.attachCamera(ship);
     audioController.attachListener(ship);
@@ -119,21 +119,22 @@ function createEnemies(ship){
         distance = 200,
         amount = 1;
 
-    for (a = 0; a < 6.28; a += 6.28/amount){
+    for (a = 0; a < amount; a += 1){
         (function(){
-            var dummy = new Ship(200, 0, 'test', null);
+            var dummy = new Ship(a * 70, 10, 'test', null);
             dummy.start();
             engy.collider.add(dummy);
             engy.addToMainLoop(dummy);
             setTimeout(function(){
             window.dummy = dummy;
 
-            dummy.target = ship;
+//            dummy.target = ship;
 //            dummy.lastBehavior = dummy.immobile;
-            dummy.lastBehavior = dummy.reachPoint;
+//            dummy.lastBehavior = dummy.reachPoint;
+            dummy.lastBehavior = dummy.scan;
 
             }, 2000);
-            engy.attachCamera(dummy);
+//            engy.attachCamera(dummy);
 //        ship.target = dummy;
         })();
 
