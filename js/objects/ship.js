@@ -80,6 +80,7 @@ Ship.prototype.init = function(startX, startY, type, behaviorOptions) {
     this.speedLimitSquared = Math.pow(this.speedLimit, 2);
     this.rotationSpeedFactor = 30;
     this.rotationAcceleration = 0.0001 + Math.random()*0.005;
+    this.rotationSpeedLimit = 0.2;
 //    this.targetAngleAccuracy = 0.01 + Math.random();
     this.targetAngleAccuracy = 1;
 
@@ -187,32 +188,7 @@ Ship.prototype.update = function(time){
     if (this.running) {
         if (this.collide && this.collide.source != this){
             // TODO implements collision checking and reactions
-
-            if (bitMapper.is('ship', this.collide)/* && this.collide.fleet.uniq != this.fleet.uniq*/) {
-//                        this.stop();
-            }
-
-            if (bitMapper.is('projectile', this.collide)/* && this.collide.source.fleet.uniq != this.fleet.uniq*/) {
-                this.durability--;
-
-                this.setIdle();
-
-                // TODO mutual targeting
-                this.target = this.collide.source;
-                this.collide.source.target = this;
-
-                if (this.fleet){
-                    if (!this.collide.source.target){
-                        this.collide.source.fleet.reportTarget(this.collide.source, this);
-                    }
-                    console.info('UNDER ATTACK', this.collide.source);
-                    if (!this.target) {
-                        this.fleet.reportTarget(this, this.collide.source);
-                    }
-                }
-            }
-
-            this.collide = false;
+            this.processCollisionData();
         }
         if (this.durability < 0 ) {
             this.stop();
@@ -322,15 +298,16 @@ Ship.prototype.avoid = function(delta){
 
     calcTime = this.distance / (this.velocity + 0.00001);
 
-    distX -= (0 + this.target.currentSpeedX) * calcTime;
-    distY -= (0 + this.target.currentSpeedY) * calcTime;
+//    distX -= (0 + this.target.currentSpeedX) * calcTime;
+//    distY -= (0 + this.target.currentSpeedY) * calcTime;
 
     if (this.distance > this.avoidanceDistance){
-        this.applyBehavior = this.reachPoint;
+//        this.applyBehavior = this.reachPoint;
+        this.applyBehavior = this.scan;
     }
 
     this.targetAngle = Math.atan2( -distX * sin + cos * distY, distX * cos + sin * distY);
-    this.targetAngle -= this.avoidanceAngle * (this.targetAngle / Math.abs(this.targetAngle));
+//    this.targetAngle -= this.avoidanceAngle * (this.targetAngle / Math.abs(this.targetAngle));
 };
 
 Ship.prototype.makeDecision = function(){
@@ -413,6 +390,8 @@ Ship.prototype.reachPoint = function(delta){
     if (this.distance < 500 && Math.abs(this.targetAngle) > 0.1){
         k = (1 - this.distance / 500);
 
+        this.targetAngleAccuracy = 1.5 - k;
+
         calcTime = this.distance / (this.velocity + 0.00001);
         distX -= this.currentSpeedX * calcTime * k;
         distY -= this.currentSpeedY * calcTime * k;
@@ -427,7 +406,7 @@ Ship.prototype.reachPoint = function(delta){
 //    } else
     if (this.distance < 30){
 //        this.applyBehavior = this.follow;
-        console.log(this.target);
+//        console.log(this.target);
         this.applyBehavior = this.makeDecision;
 //        this.applyBehavior = this.brake;
     } else {
@@ -523,13 +502,62 @@ Ship.prototype.scan = function(){
     if (!this.locator.enabled) {
         this.locator.enable();
     } else if (this.locator.checked) {
+        if (this.locator.detectedObjects.length){
+//            this.target = this.locator.detectedObjects[0].source || this.locator.detectedObjects[0];
+            this.target = this.locator.detectedObjects[0];
+            this.applyBehavior = this.reachPoint;
+
+        }
         this.locator.disable();
+//            if (this.locator.detectedObjects[0].source) {
+//                console.log('BULLET DETECTED', this.locator.detectedObjects[0]);
+//                this.target = this.locator.detectedObjects[0].source;
+//                this.applyBehavior = this.avoid
+//            } else {
+//                this.target = this.locator.detectedObjects[0];
+//                this.applyBehavior = this.reachPoint;
+//            }
+
     } else {
         this.locator.check();
-        if (this.locator.detectedObjects.length){
-            this.target = this.locator.detectedObjects[0].source || this.locator.detectedObjects[0];
-            this.applyBehavior = this.reachPoint;
+
+    }
+};
+
+Ship.prototype.processLocatorData = function(){
+    // TODO move logic from _scan_ here
+};
+
+Ship.prototype.processCollisionData = function(){
+    // TODO move collision logic here (from _update_)
+    if (this.collide && this.collide.source != this){
+        // TODO implements collision checking and reactions
+
+        if (bitMapper.is('ship', this.collide)/* && this.collide.fleet.uniq != this.fleet.uniq*/) {
+//                        this.stop();
         }
+
+        if (bitMapper.is('projectile', this.collide)/* && this.collide.source.fleet.uniq != this.fleet.uniq*/) {
+            this.durability--;
+
+            this.setIdle();
+
+            // TODO mutual targeting
+            this.target = this.collide.source;
+            this.collide.source.target = this;
+
+            if (this.fleet){
+                if (!this.collide.source.target){
+                    this.collide.source.fleet.reportTarget(this.collide.source, this);
+                }
+                console.info('UNDER ATTACK', this.collide.source);
+                if (!this.target) {
+                    this.fleet.reportTarget(this, this.collide.source);
+                }
+            }
+        }
+
+        this.collide = false;
     }
 };
 
@@ -560,6 +588,24 @@ Ship.prototype.track = function(delta){
 
 //    if (Math.abs(this.targetAngle) < a * 2 && Math.abs(this.rotationSpeed) < a * 2) {
 
+};
+
+Ship.prototype.log = '';
+
+Ship.prototype.trackAlt = function(delta){
+    if (!this.rotationEnabled){
+        return false;
+    }
+
+    var c0 = 0.01 / Math.PI,
+        c1 = 1.1 * Math.sqrt(c0),
+        force = this.targetAngle * c0 - this.rotationSpeed * c1;
+
+    if (Math.abs(force) > 0.0001){
+        this.flame.fireByParams('jet2', this.x, this.y, this.radius, this.rotationAngle + (force > 0 ? -0.5 : 0.5), this.currentSpeedX, this.currentSpeedY, 0, 0);
+        this.rotationSpeed += (force > 0) ? this.rotationAcceleration : -this.rotationAcceleration;
+    }
+    this.log = force;
 };
 
 Ship.prototype.trackPoint = function(delta){
@@ -883,7 +929,8 @@ Ship.prototype.keydownEvents = {
 
 Ship.prototype.action = function(time){
 
-    this.track(time);
+//    this.track(time);
+    this.trackAlt(time);
     this.move(time);
 
     // TODO good idea for broken engine

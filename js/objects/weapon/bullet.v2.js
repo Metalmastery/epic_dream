@@ -139,10 +139,9 @@ function particles(){
                 currentProjectile.position.x += currentProjectile.speedX * time;// + Math.sin(currentProjectile.lifetime)*3;
                 currentProjectile.position.y += currentProjectile.speedY * time;// + Math.cos(currentProjectile.lifetime)*3;
 
-//                shaderFlame.fireByParams(currentProjectile.position.source.weapon ,currentProjectile.position.x, currentProjectile.position.y, 0, currentProjectile.lifetime >> 0,0,0);
+                // TODO maybe add interpolation value between frames
+//                shaderFlame.fireByParams('bullet' ,currentProjectile.position.x - currentProjectile.speedX * time / 2, currentProjectile.position.y - currentProjectile.speedY * time / 2, 0, currentProjectile.position.source.rotationAngle,0,0);
                 shaderFlame.fireByParams('bullet' ,currentProjectile.position.x, currentProjectile.position.y, 0, currentProjectile.position.source.rotationAngle,0,0);
-//                shaderFlame.fireByParams(currentProjectile.position.source.weapon ,currentProjectile.position.x, currentProjectile.position.y, 0, currentProjectile.position.source.rotationAngle + 0.5,0,0);
-//                shaderFlame.fireByParams(currentProjectile.position.source.weapon ,currentProjectile.position.x, currentProjectile.position.y, 0, currentProjectile.position.source.rotationAngle - 0.5,0,0);
             } else {
                 if (activeProjectiles[i]) {
                     releaseObject(currentProjectile);

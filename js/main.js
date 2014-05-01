@@ -128,13 +128,13 @@ function createEnemies(ship){
             setTimeout(function(){
             window.dummy = dummy;
 
-//            dummy.target = ship;
+            dummy.target = ship;
 //            dummy.lastBehavior = dummy.immobile;
-//            dummy.lastBehavior = dummy.reachPoint;
-            dummy.lastBehavior = dummy.scan;
+            dummy.lastBehavior = dummy.reachPoint;
+//            dummy.lastBehavior = dummy.scan;
 
             }, 2000);
-//            engy.attachCamera(dummy);
+            engy.attachCamera(dummy);
 //        ship.target = dummy;
         })();
 
