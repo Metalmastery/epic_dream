@@ -21,6 +21,7 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
     //TODO channel registration for every member
 
     this.flame = shaderFlame;
+    this.digits = digits;
 
     this.active = Math.random() > 0.5;
 
@@ -41,7 +42,7 @@ Ship.prototype.init = function(startX, startY, behavior, behaviorOptions) {
     // TODO implement damage, durability indication
     // TODO can compute the size of the indication box with boundingSphere
 //    this.totalDurability = (Math.random()*50>>0) + 20;
-    this.totalDurability = 20;
+    this.totalDurability = 2000;
     this.durability = this.totalDurability;
     this.indicatorSize = 25;
 
@@ -180,7 +181,13 @@ Ship.prototype.start = function(){
                     }
 
                     if (bitMapper.is('projectile', self.collide)/* && self.collide.source.fleet.uniq != self.fleet.uniq*/) {
-                        self.durability--;
+                        var damage = Math.random() * 100 >> 0,
+                            crit = Math.random() < 0.1;
+
+                        if (crit) damage <<=2;
+
+                        self.durability-= damage;
+                        self.digits.show(self, damage, crit);
 
                         // TODO mutual targeting
                         self.target = self.collide.source;
@@ -245,7 +252,6 @@ Ship.prototype.brake = function(delta){
 Ship.prototype.avoid = function(delta){
     this.targetAngle = this.targetAngle - 4*(1 - this.distance*this.distance/40000) * (Math.abs(this.targetAngle)/this.targetAngle);
 };
-
 
 Ship.prototype.followTest = function(delta) {
     if (!this.active) {

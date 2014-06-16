@@ -17,6 +17,9 @@ function init(){
     rocket.attachToScene(engy.scene);
     indicator.attachToScene(engy.scene);
 
+    digits.attachToScene(engy.scene);
+    engy.addToMainLoop(digits);
+
     var ship = new Ship(0, 0, 'ship', null);
 //    indicator.add(ship);
     engy.attachCamera(ship);
