@@ -55,12 +55,12 @@ function bufferParticles(color){
         'varying vec3 vColor;' ,
         'varying float alpha;' ,
         'void main(){' ,
-            'alpha = (lifetime-time) / lifetime;',
-            'vColor = customColor;' ,
-            'vec4 mvPosition = modelViewMatrix * vec4( position + velocity*time, 1.0 );' ,
-            'gl_PointSize = (size * 0.75  + size * 0.25 * alpha) * (scale / length(mvPosition.xyz));' ,
-            '//gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );' ,
-            'gl_Position = projectionMatrix * mvPosition; ',
+        'alpha = (lifetime-time) / lifetime;',
+        'vColor = customColor;' ,
+        'vec4 mvPosition = modelViewMatrix * vec4( position + velocity*time, 1.0 );' ,
+        'gl_PointSize = (size * 0.75  + size * 0.25 * alpha) * (scale / length(mvPosition.xyz));' ,
+        '//gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );' ,
+        'gl_Position = projectionMatrix * mvPosition; ',
         '}'].join('\n');
 
     var flameFragmentShader = [
@@ -69,14 +69,14 @@ function bufferParticles(color){
         'varying vec3 vColor;' ,
         'varying float alpha;' ,
         'void main() {' ,
-            'if (alpha < 0.0) {discard;};',
-            'float a2 = alpha*alpha;',
-            'float a3 = a2*alpha;',
-            '//gl_FragColor = vec4( color * vColor, alpha/2.0 );' ,
-            'vec3 col = vColor;' ,
-            'gl_FragColor = vec4( col + vec3(a3, a3, a3), a2 );' ,
-            '//gl_FragColor = vec4( col + vec3(alpha/2.0, alpha/2.0, alpha/2.0), a2 );' ,
-            'gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord ); ' ,
+        'if (alpha < 0.0) {discard;};',
+        'float a2 = alpha*alpha;',
+        'float a3 = a2*alpha;',
+        '//gl_FragColor = vec4( color * vColor, alpha/2.0 );' ,
+        'vec3 col = vColor;' ,
+        'gl_FragColor = vec4( col + vec3(a3, a3, a3), a2 );' ,
+        '//gl_FragColor = vec4( col + vec3(alpha/2.0, alpha/2.0, alpha/2.0), a2 );' ,
+        'gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord ); ' ,
         '}'].join('\n');
 
 
@@ -191,7 +191,8 @@ function bufferParticles(color){
     function fire(shooter){
         var angle = shooter.rotationAngle,
             radius = shooter.radius || 0;
-        angle += 3.07 + Math.random()*0.14;
+//        angle += 3.07 + Math.random()*0.14;
+        angle += 3.14;
         var vecPosition = nextIndex * 3;
         var cos = Math.cos(angle), sin = Math.sin(angle);
         var selfSpeedX = cos*projectileSpeed,
@@ -226,15 +227,24 @@ function bufferParticles(color){
         }
     }
 
-    function fireByParams(type, x, y, shipRadius, angle, vX, vY){
+    function fireByParams(type, x, y, shipRadius, angle, vX, vY, cos, sin){
         var radius = shipRadius || 0,
-            angle = angle + 3.07 + Math.random()*0.14,
+//            angle = angle + 3.07 + Math.random()*0.14,
 //            angle = angle + 3.14,
             vecPosition = nextIndex * 3,
             type = type ? flameTypes[type] : flameTypes.jet,
             col = type.color,
             size = type.size;
-        var cos = Math.cos(angle), sin = Math.sin(angle);
+//        vX = 0;
+//        vY = 0;
+        if (angle){
+            cos = Math.cos(angle);
+            sin = Math.sin(angle);
+        } else {
+            cos = - cos;
+            sin = - sin;
+        }
+//        console.log(cos, sin);
         var selfSpeedX = cos*projectileSpeed + vX,
             selfSpeedY = sin*projectileSpeed + vY,
 

@@ -290,7 +290,7 @@ function digitParticleSystem(color){
                 selfSpeedX = cos*speed + ship.currentSpeedX,
                 selfSpeedY = sin*speed + ship.currentSpeedY,
 
-                positionY = ship.y - ship.radius,
+                positionY = ship.y + ship.radius,
                 positionX = horizontalAlignment + offset * i;
 
             valuesVelocity[vecPosition] = selfSpeedX;

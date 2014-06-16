@@ -1,6 +1,9 @@
 var Designer = (function(){
     var self = {};
     var materials = {
+        lineBasic : function(){
+
+        },
         lambertBasic : function(color, map, lightmap){
             var color = color.clone().offsetHSL(0,0,0.3);
             return new THREE.MeshLambertMaterial( {
@@ -192,12 +195,13 @@ var Designer = (function(){
         geometry.vertices.push(new THREE.Vector3( 0, 0, 0 ) );
         geometry.vertices.push(new THREE.Vector3( -5, -5, 0 ) );
         geometry.vertices.push(new THREE.Vector3( 10, 0, 0 ) );
-
         var material = new THREE.LineBasicMaterial({
 //            vertexColors: true,
-            color : new THREE.Color(self.shipColor)
+            color : colors.split[1].clone()
         });
+
         geometry = new THREE.Line( geometry, material, 0);
+        geometry.rotation.order = 'ZYX';
         return geometry;
     }
 
@@ -269,7 +273,7 @@ var Designer = (function(){
         _calculateUVsAfterCSG(geometry);
 
         // TODO adjust colors in material
-//        var material = materials.phongWithAmbient(color, texture);
+//        var material = materials.phongWithAmbient(color, floorTexture);
         var material = materials.lambertBasic(color, floorTexture, lightmap);
 
         geometry = new THREE.Mesh(geometry, material);
@@ -313,52 +317,52 @@ var Designer = (function(){
         return geometry;
     }
 
-	function ringShip(){
-		"use strict";
+    function ringShip(){
+        "use strict";
 
-		var floorTexture = new THREE.ImageUtils.loadTexture( 'img/worley3.png' );
-		var lightmap = new THREE.ImageUtils.loadTexture( 'img/noise3_lightmap.jpg' );
-		floorTexture.wrapS = floorTexture.wrapT = THREE.MirroredRepeatWrapping;
+        var floorTexture = new THREE.ImageUtils.loadTexture( 'img/worley3.png' );
+        var lightmap = new THREE.ImageUtils.loadTexture( 'img/noise3_lightmap.jpg' );
+        floorTexture.wrapS = floorTexture.wrapT = THREE.MirroredRepeatWrapping;
 
-		var rnd = {
-			ringXScale: +((Math.random()*0.5+0.5).toFixed(2)),
-			ringRadius: (Math.random()*7 + 7) >> 0,
-			wingsLength: (Math.random()*10 + 10) >> 0,
-			wingsOffset: (Math.random()*4 + 5) >> 0,
-			hullLength: (Math.random()*10 + 15) >> 0
-		};
+        var rnd = {
+            ringXScale: +((Math.random()*0.5+0.5).toFixed(2)),
+            ringRadius: (Math.random()*7 + 7) >> 0,
+            wingsLength: (Math.random()*10 + 10) >> 0,
+            wingsOffset: (Math.random()*4 + 5) >> 0,
+            hullLength: (Math.random()*10 + 15) >> 0
+        };
 
-		var color = colors.split[2].clone();
+        var color = colors.split[2].clone();
 //        color.setHSL(Math.random(),1,0.3);
 //        color.setHSL(0.8,1,0.5);
-		var ring = new THREE.TorusGeometry(rnd.ringRadius, 2, 10, 15); //no need to rotate
-		var mainHull = new THREE.CylinderGeometry(2, 4, rnd.hullLength); //rotate
-		var rWing = new THREE.CylinderGeometry(1, 1, rnd.wingsLength); //rotate
-		var lWing = new THREE.CylinderGeometry(1, 1, rnd.wingsLength); //rotate
+        var ring = new THREE.TorusGeometry(rnd.ringRadius, 2, 10, 15); //no need to rotate
+        var mainHull = new THREE.CylinderGeometry(2, 4, rnd.hullLength); //rotate
+        var rWing = new THREE.CylinderGeometry(1, 1, rnd.wingsLength); //rotate
+        var lWing = new THREE.CylinderGeometry(1, 1, rnd.wingsLength); //rotate
 
-		var hullMatrix = new THREE.Matrix4().makeRotationZ(-Math.PI/2);
-		mainHull.applyMatrix(hullMatrix);
-		hullMatrix.scale({x:1,y:1,z:1.2});
-		rWing.applyMatrix(hullMatrix);
-		lWing.applyMatrix(hullMatrix);
-		hullMatrix.identity().scale({x:rnd.ringXScale,y:1,z:1});
-		ring.applyMatrix(hullMatrix);
+        var hullMatrix = new THREE.Matrix4().makeRotationZ(-Math.PI/2);
+        mainHull.applyMatrix(hullMatrix);
+        hullMatrix.scale({x:1,y:1,z:1.2});
+        rWing.applyMatrix(hullMatrix);
+        lWing.applyMatrix(hullMatrix);
+        hullMatrix.identity().scale({x:rnd.ringXScale,y:1,z:1});
+        ring.applyMatrix(hullMatrix);
 
-		var csgHull = THREE.CSG.toCSG(mainHull,new THREE.Vector3(7,0,0));
-		var csgRing = THREE.CSG.toCSG(ring, new THREE.Vector3(3,0,0));
-		var csgLWing = THREE.CSG.toCSG(lWing, new THREE.Vector3(rnd.wingsOffset,rnd.ringRadius,0));
-		var csgRWing = THREE.CSG.toCSG(rWing, new THREE.Vector3(rnd.wingsOffset,-rnd.ringRadius,0));
+        var csgHull = THREE.CSG.toCSG(mainHull,new THREE.Vector3(7,0,0));
+        var csgRing = THREE.CSG.toCSG(ring, new THREE.Vector3(3,0,0));
+        var csgLWing = THREE.CSG.toCSG(lWing, new THREE.Vector3(rnd.wingsOffset,rnd.ringRadius,0));
+        var csgRWing = THREE.CSG.toCSG(rWing, new THREE.Vector3(rnd.wingsOffset,-rnd.ringRadius,0));
 
-		var shipGeometry = THREE.CSG.fromCSG(csgHull.union(csgRing).union(csgLWing).union(csgRWing));
-		_calculateUVsAfterCSG(shipGeometry);
+        var shipGeometry = THREE.CSG.fromCSG(csgHull.union(csgRing).union(csgLWing).union(csgRWing));
+        _calculateUVsAfterCSG(shipGeometry);
 
 //        var material = materials.phongEmissive(color, floorTexture, lightmap);
-		var material = materials.lambertBasic(color, floorTexture, lightmap);
+        var material = materials.lambertBasic(color, floorTexture, lightmap);
 
-		shipGeometry = new THREE.Mesh(shipGeometry, material);
-		shipGeometry.rotation.order = 'ZYX';
-		return shipGeometry;
-	}
+        shipGeometry = new THREE.Mesh(shipGeometry, material);
+        shipGeometry.rotation.order = 'ZYX';
+        return shipGeometry;
+    }
 
     function multiNodeShip(){
         "use strict";
@@ -426,12 +430,19 @@ var Designer = (function(){
 
     }
 
+    function giveMe(itemName){
+        if (typeof this[itemName] == 'function'){
+            return this[itemName]();
+        }
+    }
+
     return {
+        giveMe : giveMe,
         torusShip : torusShip,
         basicShip : basicShip,
+        ringShip : ringShip,
         simple2DShip : simple2DShip,
         multiNodeShip : multiNodeShip,
-		ringShip : ringShip,
         colors : colors
     }
 

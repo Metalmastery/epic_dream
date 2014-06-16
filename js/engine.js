@@ -1,6 +1,7 @@
 var engy = (function(){
 
     var mainLoopObjects = [],
+        weapons = [],
         counter = 0,
         scene,
         camera,
@@ -9,9 +10,11 @@ var engy = (function(){
         watched = {x : 0, y : 0},
         removeQuery = [],
         gameSpeed = 1,
-        // TODO use next vars for slow-down and speed-up
+    // TODO use next vars for slow-down and speed-up
         gameSpeedChangeSteps = 0,
         gameSpeedChangePerStep = 0,
+        keyboardMap = {},
+        mouseMap = {},
         bindings = {
             109 : function (e){
                 if (e.altKey){
@@ -46,6 +49,7 @@ var engy = (function(){
         renderer = new THREE.WebGLRenderer({
             antialias: true,
             preserveDrawingBuffer: true,
+            premultipliedAlpha : true,
             alpha : true,
             precision: 'lowp'
 //            devicePixelRation : 1
@@ -83,16 +87,39 @@ var engy = (function(){
 //        gridHelper();
         createNebula();
 
+        bindEvents();
+
+    }
+
+    function bindEvents(){
+        "use strict";
+        console.log('bind events');
+        document.addEventListener('keydown', function(e){
+//        console.log(e.keyCode);
+            keyboardMap[e.keyCode] = true;
+            //self.keydownEvents[e.keyCode].call(self);
+        });
+        document.addEventListener('keyup', function(e){
+            keyboardMap[e.keyCode] = false;
+            //self.keydownEvents[e.keyCode].call(self);
+        });
+        document.body.addEventListener('mousemove', function(e){
+//        console.log(e);
+            mouseMap.mouseX = e.x;
+            mouseMap.mouseY = e.y;
+//        self.pressedKeys['77'] = true;
+            mouseMap.moving = true;
+        })
     }
 
     function createEnemy(ship){
         var a = Math.random() * Math.PI * 2,
 //            distance = Math.random() * 100 + 300,
             distance = 300,
-            dummy = new Ship(distance * Math.cos(a), distance * Math.sin(a), 'follow2', ship);
-            dummy.start();
-            collider.add(dummy);
-            addToMainLoop(dummy);
+            dummy = new Ship(distance * Math.cos(a), distance * Math.sin(a), 'test', ship);
+        dummy.start();
+        collider.add(dummy);
+        addToMainLoop(dummy);
     }
 
     function attachCamera(obj){
@@ -336,8 +363,10 @@ var engy = (function(){
         var step = 100;
         var gridHelper = new THREE.GridHelper( size, step );
 
-        gridHelper.position = new THREE.Vector3( 0, 0, 0 );
+        gridHelper.position = new THREE.Vector3( 0, 0, -100 );
         gridHelper.rotation = new THREE.Euler( 1.57, 0, 0 );
+
+        console.log(gridHelper);
 
         scene.add( gridHelper );
     }
@@ -415,12 +444,17 @@ var engy = (function(){
         objects : mainLoopObjects,
         destroy : destroy,
         init : init,
+        weapons : weapons,
         scene : scene,
         camera : camera,
         renderer : renderer,
         attachCamera : attachCamera,
         setGameSpeedImmediately : setGameSpeedImmediately,
-        setGameSpeedGradually : setGameSpeedGradually
+        setGameSpeedGradually : setGameSpeedGradually,
+        controls : {
+            keyboardMap : keyboardMap,
+            mouseMap : mouseMap
+        }
     }
 
 })();

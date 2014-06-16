@@ -1,9 +1,9 @@
 var scene, renderer,
     camera;
 
-    if ( !init() ){
-        animate();
-    }
+if ( !init() ){
+    animate();
+}
 
 
 
@@ -16,11 +16,9 @@ function init(){
     shaderFlame.attachToScene(engy.scene);
     rocket.attachToScene(engy.scene);
     indicator.attachToScene(engy.scene);
-
     digits.attachToScene(engy.scene);
-    engy.addToMainLoop(digits);
 
-    var ship = new Ship(0, 0, 'ship', null);
+    var ship = new Ship(0, -500, 'ship', null);
 //    indicator.add(ship);
     engy.attachCamera(ship);
     audioController.attachListener(ship);
@@ -30,8 +28,11 @@ function init(){
     engy.addToMainLoop(shaderFlame);
     engy.addToMainLoop(rocket);
     engy.addToMainLoop(ship);
+    engy.addToMainLoop(digits);
 //    engy.addToMainLoop(indicator);
     engy.collider.add(ship);
+
+    window.ship = ship;
 
 //    ambient();
 
@@ -48,6 +49,7 @@ function init(){
     });
 
     createEnemies(ship);
+//    createDuel(ship);
 //    createTwoFaction(ship);
 //    createFleet(ship);
 }
@@ -86,21 +88,58 @@ function createFleet(ship){
 
 }
 
+function createDuel(ship){
+    var dummy1 = new Ship(200, 200, 'test', null);
+//        dummy = new Ship(distance, distance, 'follow', null);
+    dummy1.start();
+    engy.collider.add(dummy1);
+    engy.addToMainLoop(dummy1);
+
+    var dummy2 = new Ship(-200, 200, 'test', null);
+//    dummy2.avoidMode = false;
+//    dummy2.avoidanceDistance = 0;
+    dummy2.start();
+    engy.collider.add(dummy2);
+    engy.addToMainLoop(dummy2);
+
+    setTimeout(function(){
+        dummy1.target = dummy2;
+        dummy2.target = dummy1;
+        dummy1.applyBehavior = dummy1.reachPoint;
+        dummy2.applyBehavior = dummy2.reachPoint;
+    }, 500);
+
+    window.dummy = dummy2;
+
+//    engy.attachCamera(dummy1);
+
+}
+
 function createEnemies(ship){
     var a = 0,
 //        distance = Math.random() * 1000 + 300,
-        distance = 50,
-        amount = 3,
-        dummy;
-    for (a = 0; a < 6.28; a += 6.28/amount){
-//        distance = 200 + Math.cos(a*3) * 100;
-        dummy = new Ship(distance * Math.cos(a), distance * Math.sin(a), 'follow', null);
-//        dummy = new Ship(distance, distance, 'follow', null);
-        dummy.start();
-        engy.collider.add(dummy);
-        engy.addToMainLoop(dummy);
+        distance = 200,
+        amount = 10;
 
-        ship.target = dummy;
+    for (a = 0; a < amount; a += 1){
+        (function(){
+            var dummy = new Ship(a * 70, 10, 'test', null);
+            dummy.start();
+            engy.collider.add(dummy);
+            engy.addToMainLoop(dummy);
+            setTimeout(function(){
+                window.dummy = dummy;
+
+                dummy.target = ship;
+//            dummy.lastBehavior = dummy.immobile;
+                dummy.lastBehavior = dummy.reachPoint;
+//            dummy.lastBehavior = dummy.scan;
+
+            }, 2000);
+            engy.attachCamera(dummy);
+//        ship.target = dummy;
+        })();
+
     }
 }
 
@@ -171,24 +210,16 @@ function animate() {
         currentFtame = 0,
         delta = 0;
 
-    var cb = function(){
+    function cb(){
         requestAnimationFrame(cb);
-        logic();
-        engy.renderer.render( engy.scene, engy.camera );
-//        engy.renderer.clear();
-//        engy.composer.render();
-    };
-
-    var logic = function(){
+        //logic(); // inline
         currentFtame = new Date();
         delta = (currentFtame - lastFrame) / 16;
-//        if (delta > 2) {
-//            delta = 2;
-//        }
         engy.update(delta);
         engy.collider.testCollisions();
         lastFrame = currentFtame;
-    };
+        engy.renderer.render( engy.scene, engy.camera );
+    }
 
     requestAnimationFrame(cb);
 }

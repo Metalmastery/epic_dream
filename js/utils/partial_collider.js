@@ -79,13 +79,13 @@ var Collider = function(bounds, depth){
             x = normalizedX / (normalizedBounds.cellWidth),
             y = normalizedY / (normalizedBounds.cellHeight),
 //            proportionalWidth = (obj.radius) / normalizedBounds.cellWidth,
-            proportionalWidth = (10) / normalizedBounds.cellWidth,
+//            proportionalWidth = (10) / normalizedBounds.cellWidth,
 //            proportionalHeight = (obj.radius) / normalizedBounds.cellHeight,
-            proportionalHeight = (10) / normalizedBounds.cellHeight,
+//            proportionalHeight = (10) / normalizedBounds.cellHeight,
             hash;
 
-        var xPositionInCell = (x >> 0) + 0.5 - x;
-        var yPositionInCell = (y >> 0) + 0.5 - y;
+//        var xPositionInCell = (x >> 0) + 0.5 - x;
+//        var yPositionInCell = (y >> 0) + 0.5 - y;
 
         hash = [(x >> 0) + (y << depth)];
 
@@ -158,8 +158,8 @@ var Collider = function(bounds, depth){
                         if (obj1.colliderAccept & obj2.colliderType || obj2.colliderAccept & obj1.colliderType){
                             if (Math.pow(obj1.x - obj2.x, 2) + Math.pow(obj1.y - obj2.y, 2) < Math.pow(obj1.radius + obj2.radius, 2)){
 
-                                obj1.collide = obj2;
-                                obj2.collide = obj1;
+                                obj1.collide = obj1.colliderAccept & obj2.colliderType ? obj2 : null;
+                                obj2.collide = obj2.colliderAccept & obj1.colliderType ? obj1 : null;
 //                                console.log(obj1.collide, obj2.collide);
 //                            console.log('COLLIDE', obj1, obj2, obj1 === obj2);
                                 // TODO remove hardcode & organize collision callback
